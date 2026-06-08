@@ -1,2 +1,80 @@
 body
 {background-color: rgb(252, 252, 252);}
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f8f5;
+  color: #333;
+  min-height: 100vh;
+}
+
+/* Quote section */
+pre {
+  background-color: #dff6dd;
+  padding: 20px;
+  font-size: 1.1rem;
+  white-space: normal;
+}
+
+pre div {
+  text-align: center;
+}
+
+/* Horizontal line */
+hr {
+  margin-top: 15px;
+  border: none;
+  height: 2px;
+  background-color: #4caf50;
+}
+
+/* Sidebar */
+aside {
+  width: 250px;
+  background-color: white;
+  padding: 20px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  min-height: calc(100vh - 100px);
+}
+
+/* Links */
+aside a {
+  display: block;
+  text-decoration: none;
+  color: #2e7d32;
+  background-color: #e8f5e9;
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+/* Hover effect */
+aside a:hover {
+  background-color: #4caf50;
+  color: white;
+  transform: translateX(5px);
+}
+
+/* Main content */
+main {
+  margin-left: 270px;
+  padding: 30px;
+}
+
+/* Layout */
+body {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+pre {
+  width: 100%;
+}
