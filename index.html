@@ -3,40 +3,367 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Well-Bell</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>Well-Bell | Dashboard</title>
+    <link rel="stylesheet" href="Style.css" />
+    <!-- Core state management -->
+    <script src="state.js"></script>
+    <!-- Chart.js CDN for premium dynamic visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
-    <header>
-    <div class="logo">
-       <img src="">
-    </div>
-    
-    <pre> <div> <b>Quote of the day:</b><i> Hard work pays off.</i></div>
-     
-     
-     
-      <hr></pre>
-      </header>
-      <aside>
-    <div><a href="/Diet">Diet</a></div>
-    <br>
-    <div><a href="/Work">Work</a></div>
-    <br>
-    <div><a href="/Mental-wellbeing">Mental wellbeing</a></div>
-    <br>
-    <div><a href="/Physical-wellbeing">Physical wellbeing</a></div>
-    <br>
-    <div><a href="Money-Managment">Money managment</a></div>
-    <br>
-    <div><a href="/me time" >ME time</a></div>
-    <br>
-    <div><a href="Diary">Diary</a></div>
-    <br>
-    <div><a href="Sleep">Sleep</a></div>
-    </aside>
-    <main>
+    <div class="app-container">
+      <!-- Sidebar Navigation (dynamically populated by state.js) -->
+      <aside></aside>
 
-    </main>
+      <!-- Main Content Container -->
+      <main>
+        <!-- Welcome Banner and Quote -->
+        <header>
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h1 id="welcomeGreeting">Hello, Companion</h1>
+              <p>Welcome back to your cozy space. Let's cultivate harmony today.</p>
+            </div>
+            <!-- Click to shuffle quote panel -->
+            <div class="quote-container" id="quoteContainer" style="cursor: pointer;" title="Click to shuffle quote">
+              <div class="quote-label">Daily Inspiration</div>
+              <div class="quote-text" id="dailyQuote">"Deep forest air, warm tea, and daily discipline build a beautiful life."</div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+          <!-- Cumulative Wellness score & Progress Wheel -->
+          <div class="card">
+            <div class="card-title">
+              <span>🌸 Wellness Harmony Index</span>
+              <span id="streakCountVal">🔥 0 Day Streak</span>
+            </div>
+            <div class="progress-ring-container">
+              <svg class="progress-ring-svg" width="120" height="120">
+                <circle class="progress-ring-circle-bg" cx="60" cy="60" r="40"></circle>
+                <circle class="progress-ring-circle-fill" id="wellnessRingFill" cx="60" cy="60" r="40"></circle>
+                <!-- Central text -->
+                <text x="60" y="65" text-anchor="middle" class="progress-score-text" id="wellnessScoreVal" transform="rotate(90 60 60)">--%</text>
+              </svg>
+              <div style="flex-grow: 1;">
+                <p style="font-size: 0.95rem; line-height: 1.5; color: var(--text-muted);">
+                  This index averages your progress across all 8 wellness categories. Cultivate balance to level up your companion!
+                </p>
+                <!-- XP progress widget -->
+                <div class="glass-panel" style="margin-top: 12px; margin-bottom: 0; padding: 10px 14px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700;">
+                    <span>XP Progress</span>
+                    <span id="xpWidgetLabel">0 / 100 XP</span>
+                  </div>
+                  <div class="xp-bar-bg" style="height: 8px;">
+                    <div class="xp-bar-fill" id="xpWidgetFill" style="width: 0%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Daily Checkin Widget -->
+          <div class="card">
+            <div class="card-title">
+              <span>☀️ Today's Quick Check-in</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-gold);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="checklist" id="dailyChecklist">
+              <label class="checklist-item">
+                <input type="checkbox" id="chkDiet" class="habit-checkbox">
+                <span id="chkDietLabel">Hydrated & Healthy Meals</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="chkWork" class="habit-checkbox">
+                <span id="chkWorkLabel">Tasks Completed</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="chkSleep" class="habit-checkbox">
+                <span id="chkSleepLabel">Restful Sleep Logged</span>
+              </label>
+              <label class="checklist-item">
+                <input type="checkbox" id="chkWorkout" class="habit-checkbox">
+                <span>Completed Daily Workout</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI LIFE COACH: Today's Life Reflection -->
+        <div class="card" style="margin-bottom: 30px;">
+          <div class="card-title" style="color: var(--accent-gold);">
+            <span>🍂 Today's Life Reflection (AI Coach)</span>
+            <span style="font-size: 0.8rem; background: rgba(255,173,66,0.15); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--accent-gold);">Platform Advice</span>
+          </div>
+          <div class="glass-panel" id="coachReflectionBody">
+            <p style="font-style: italic; color: var(--text-muted); text-align: center; padding: 15px;">
+              Please complete some of today's activities to compile your coaching reflection!
+            </p>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;" id="coachReflectionDetails">
+            <div class="glass-panel" style="margin-bottom: 0;">
+              <h4 style="font-family: var(--font-header); color: var(--color-diet); margin-bottom: 8px;">✨ Positive Achievements</h4>
+              <ul id="coachAchievements" style="font-size: 0.88rem; padding-left: 18px; line-height: 1.6;"></ul>
+            </div>
+            <div class="glass-panel" style="margin-bottom: 0;">
+              <h4 style="font-family: var(--font-header); color: var(--color-sleep); margin-bottom: 8px;">🌱 Tomorrow's Path</h4>
+              <ul id="coachRecommendations" style="font-size: 0.88rem; padding-left: 18px; line-height: 1.6;"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mid-Level Detail Grid -->
+        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+          <!-- Quick Status Widgets -->
+          <div class="card" style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="card-title">💧 Hydration & Quick Metrics</div>
+            
+            <div class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;">
+              <div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Water Intake</div>
+                <div style="font-size: 1.25rem; font-weight: 800;" id="waterIntakeDisplay">0.0 / 2.5 L</div>
+              </div>
+              <button onclick="addWaterToday()" class="btn btn-gold" style="padding: 6px 12px; font-size: 0.8rem;">+ 250ml Glass</button>
+            </div>
+
+            <div class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;">
+              <div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Sleep rest</div>
+                <div style="font-size: 1.25rem; font-weight: 800;" id="sleepQualityDisplay">--</div>
+              </div>
+              <a href="Sleep.html" class="btn" style="padding: 6px 12px; font-size: 0.8rem; text-decoration: none;">Configure</a>
+            </div>
+
+            <div class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;">
+              <div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Today's Spending limit</div>
+                <div style="font-size: 1.25rem; font-weight: 800;" id="spendSummaryDisplay">$0.00 spent</div>
+              </div>
+              <a href="Money Managment.html" class="btn" style="padding: 6px 12px; font-size: 0.8rem; text-decoration: none;">Ledger</a>
+            </div>
+          </div>
+
+          <!-- Weekly Progress Overview Chart -->
+          <div class="card" style="min-height: 320px; display: flex; flex-direction: column;">
+            <div class="card-title">
+              <span>📊 Balanced Pillar Index</span>
+            </div>
+            <div style="position: relative; flex-grow: 1; height: 200px;">
+              <canvas id="pillarIndexChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Badges Progression Section -->
+        <div class="card" style="margin-top: 30px;">
+          <div class="card-title">🌱 Achieved Badges & Accolades</div>
+          <div class="badge-grid" id="badgeAccoladesGrid"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Page Logic Integration -->
+    <script>
+      let pillarChart = null;
+
+      // Click to shuffle quotes
+      const QUOTES = [
+        "In the quiet forest onsen, watching the rain falls, every warm drop washes away yesterday's fatigue.",
+        "Take your time, let your roots grow deep like the grand forest pines. There is no hurry.",
+        "The light of a cozy lantern, a steaming hot spring, and a calm focus make every day a gift.",
+        "The wind rises! We must try to live.",
+        "Like Totoro sitting warm under a rain-slicked umbrella, stay peaceful and hold your ground.",
+        "Deep forest air, warm tea, and daily discipline build a beautiful life.",
+        "It's funny how you wake up and every single day is completely new. Let's make it a cozy one!"
+      ];
+
+      document.getElementById('quoteContainer').addEventListener('click', () => {
+        const idx = Math.floor(Math.random() * QUOTES.length);
+        document.getElementById('dailyQuote').textContent = `"${QUOTES[idx]}"`;
+      });
+
+      // Add water trigger
+      function addWaterToday() {
+        const mgr = window.stateManager;
+        mgr.data.waterIntake = parseFloat((mgr.data.waterIntake + 0.25).toFixed(2));
+        mgr.addXP(5);
+        if (mgr.data.waterIntake >= 3.0) {
+          mgr.unlockBadge('water_champion');
+        }
+        mgr.save();
+        syncDashboard();
+      }
+
+      // Checkbox click triggers
+      document.getElementById('chkWorkout').addEventListener('change', (e) => {
+        const mgr = window.stateManager;
+        mgr.data.workoutCompleted = e.target.checked;
+        if (e.target.checked) {
+          mgr.addXP(20);
+          mgr.unlockBadge('gym_bunny');
+        }
+        mgr.save();
+        syncDashboard();
+      });
+
+      function syncDashboard() {
+        const mgr = window.stateManager;
+        const data = mgr.data;
+        const scores = mgr.calculatePillarScores();
+        const globalScore = mgr.getCumulativeScore();
+
+        // 1. Update Greetings based on time of day
+        const hr = new Date().getHours();
+        let greeting = "Good morning, Companion ☕";
+        if (hr >= 12 && hr < 17) greeting = "Good afternoon, Companion 🍃";
+        else if (hr >= 17) greeting = "Good evening, Companion 🌙";
+        document.getElementById('welcomeGreeting').textContent = greeting;
+
+        // 2. Wellness Score ring updates
+        document.getElementById('wellnessScoreVal').textContent = `${globalScore}%`;
+        const circle = document.getElementById('wellnessRingFill');
+        const radius = circle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (globalScore / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+
+        // 3. XP Widget Bar update
+        const xpNeeded = data.level * 100;
+        const xpPercent = Math.round((data.xp / xpNeeded) * 100);
+        document.getElementById('xpWidgetLabel').textContent = `${data.xp} / ${xpNeeded} XP`;
+        document.getElementById('xpWidgetFill').style.width = `${xpPercent}%`;
+
+        // 4. Quick Check-in checkboxes sync
+        document.getElementById('chkDiet').checked = scores.Diet >= 75;
+        document.getElementById('chkDietLabel').textContent = `Hydrated & Healthy Meals (${scores.Diet}%)`;
+        document.getElementById('chkWork').checked = scores.Work >= 75;
+        document.getElementById('chkWorkLabel').textContent = `Tasks Completed (${scores.Work}%)`;
+        document.getElementById('chkSleep').checked = scores.Sleep >= 75;
+        document.getElementById('chkSleepLabel').textContent = `Restful Sleep Logged (${scores.Sleep}%)`;
+        document.getElementById('chkWorkout').checked = data.workoutCompleted;
+
+        // 5. Water & Metrics displays
+        document.getElementById('waterIntakeDisplay').textContent = `${data.waterIntake} / ${data.waterTarget} L`;
+        document.getElementById('sleepQualityDisplay').textContent = `${data.sleepLog.duration}h (Quality: ${data.sleepLog.quality}/5)`;
+        
+        const limits = mgr.calculateFinancialLimits();
+        const todaySpend = data.transactions
+          .filter(t => t.type === 'expense' && t.date === new Date().toISOString().split('T')[0])
+          .reduce((sum, t) => sum + t.amount, 0);
+        document.getElementById('spendSummaryDisplay').textContent = `$${todaySpend.toFixed(2)} / $${limits.dailySpendLimit} limit`;
+
+        // Streak Count
+        document.getElementById('streakCountVal').textContent = `🔥 Streak: ${data.streaks.dailyCheck} days`;
+
+        // 6. Renders badges
+        const badgeGrid = document.getElementById('badgeAccoladesGrid');
+        badgeGrid.innerHTML = '';
+        window.BADGES_DATABASE.forEach(b => {
+          const unlocked = data.badges.includes(b.id);
+          badgeGrid.innerHTML += `
+            <div class="badge-item ${unlocked ? 'unlocked' : ''}" title="${b.desc}">
+              <div class="badge-icon">${b.icon}</div>
+              <div class="badge-name">${b.name}</div>
+            </div>
+          `;
+        });
+
+        // 7. Dynamic Coach Reflection
+        const refl = mgr.generateTodayReflection();
+        const reflectionBody = document.getElementById('coachReflectionBody');
+        const achievementsList = document.getElementById('coachAchievements');
+        const recommendationsList = document.getElementById('coachRecommendations');
+
+        reflectionBody.innerHTML = `
+          <p style="font-size: 1.05rem; line-height: 1.6; font-weight: 500; text-align: center;">
+            "${refl.summary}"
+          </p>
+          <p style="font-style: italic; color: var(--accent-gold); text-align: center; margin-top: 10px; font-weight: 600;">
+            🍃 Bella says: "${refl.encouragement}"
+          </p>
+        `;
+
+        achievementsList.innerHTML = refl.achievements.map(a => `<li style="margin-bottom: 5px;">${a}</li>`).join('');
+        recommendationsList.innerHTML = refl.recommendations.map(r => `<li style="margin-bottom: 5px;">${r}</li>`).join('');
+
+        // 8. Re-render / update chart
+        renderPillarChart(scores);
+        
+        // Sync Sidebar Metrics if elements exist
+        const asideLvl = document.getElementById('sidebarLvlVal');
+        if (asideLvl) asideLvl.textContent = data.level;
+        const asideXp = document.getElementById('sidebarXpFill');
+        if (asideXp) asideXp.style.width = `${xpPercent}%`;
+        const asideIndex = document.getElementById('sidebarIndexVal');
+        if (asideIndex) asideIndex.textContent = `${globalScore}%`;
+      }
+
+      function renderPillarChart(scores) {
+        const ctx = document.getElementById('pillarIndexChart').getContext('2d');
+        const keys = Object.keys(scores).map(k => k === 'MeTime' ? 'ME Time' : k);
+        const vals = Object.values(scores);
+        
+        const isLight = document.body.classList.contains('light-mode');
+        const textColor = isLight ? '#3d2a1d' : '#afc1b4';
+
+        if (pillarChart) {
+          pillarChart.data.datasets[0].data = vals;
+          pillarChart.options.scales.x.ticks.color = textColor;
+          pillarChart.options.scales.y.ticks.color = textColor;
+          pillarChart.update();
+          return;
+        }
+
+        pillarChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: keys,
+            datasets: [{
+              data: vals,
+              backgroundColor: [
+                '#a3e2bc', '#a5d8f9', '#dcbdf5', '#fbbbb7', '#fae19c', '#a2ece6', '#bec4fa', '#fbc29b'
+              ],
+              borderRadius: 8,
+              maxBarThickness: 24
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { color: textColor, font: { family: 'Quicksand', size: 10, weight: '600' } }
+              },
+              y: {
+                min: 0,
+                max: 100,
+                grid: { color: 'rgba(255,255,255,0.03)' },
+                ticks: { color: textColor, font: { family: 'Quicksand', size: 10 }, stepSize: 25 }
+              }
+            }
+          }
+        });
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        syncDashboard();
+        // Listen to updates from other pages
+        window.addEventListener('wellbell_state_updated', syncDashboard);
+        window.addEventListener('wellbell_theme_changed', () => {
+          if (pillarChart) {
+            pillarChart.destroy();
+            pillarChart = null;
+          }
+          syncDashboard();
+        });
+      });
+    </script>
   </body>
 </html>

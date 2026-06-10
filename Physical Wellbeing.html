@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Well-Bell | Physical Fitness</title>
+    <link rel="stylesheet" href="Style.css" />
+    <script src="state.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      .workout-canvas-container {
+        position: relative;
+        width: 100%;
+        height: 160px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1.5px solid rgba(60, 84, 67, 0.4);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+      body.light-mode .workout-canvas-container {
+        background: rgba(255, 255, 255, 0.6);
+        border-color: rgba(199, 185, 175, 0.5);
+      }
+      .workout-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .workout-step-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: var(--border-glass);
+        padding: 12px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: var(--transition);
+      }
+      .workout-step-card:hover {
+        border-color: var(--accent-gold);
+        background: rgba(255, 173, 66, 0.05);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <aside></aside>
+
+      <main>
+        <header>
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h1>🏃 Physical Fitness & Movement</h1>
+              <p>Stretching and active walks keeps the life energy flowing like forest wind.</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Workout Routine Generator -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <div class="card">
+              <div class="card-title">
+                <span>💪 Tailored Workout Routine</span>
+                <span id="workoutLevelBadge" style="font-size: 0.8rem; background: rgba(78, 168, 173, 0.15); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--primary);">Beginner</span>
+              </div>
+              
+              <div id="noProfileAlert" class="glass-panel" style="text-align: center; padding: 20px; font-style: italic; color: var(--text-muted);">
+                We use your Age, Weight, Height, and Goals to build a personalized workout plan. Please save your profile in the <a href="Diet.html" style="color: var(--accent-gold); font-weight:800; text-decoration:none;">Diet section</a>!
+              </div>
+
+              <div id="workoutPlansContainer" style="display: flex; flex-direction: column; gap: 15px;"></div>
+            </div>
+
+            <!-- Workout Completion log -->
+            <div class="card">
+              <div class="card-title">📅 Daily Exercise Logging</div>
+              
+              <div class="glass-panel" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div>
+                  <h4 id="lblCompletedState" style="color: var(--text-main);">Daily workout not logged</h4>
+                  <p style="font-size: 0.82rem; color: var(--text-muted);">Completing a session rewards you with +20 XP!</p>
+                </div>
+                <button onclick="toggleWorkoutCompletion()" id="btnLogWorkout" class="btn btn-gold">Log Completed</button>
+              </div>
+
+              <div class="checklist">
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkStretching">
+                  <span>Completed Morning Stretching (10 mins)</span>
+                </label>
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkWalking">
+                  <span>Logged Steps / Walk outside (30 mins)</span>
+                </label>
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkCardio">
+                  <span>Completed Cardio / HIIT Session</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Interactive Workout Canvas GIF Simulation & Charts -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Workout Companion Canvas Animation -->
+            <div class="card">
+              <div class="card-title">🏃 Active Companion Animation</div>
+              <div class="workout-canvas-container">
+                <canvas id="activeWorkoutCanvas" class="workout-canvas"></canvas>
+              </div>
+              <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                <button onclick="changeAnimation('stretch')" class="btn btn-secondary btn-sm" style="font-size:0.75rem;">Stretch Mode</button>
+                <button onclick="changeAnimation('cardio')" class="btn btn-secondary btn-sm" style="font-size:0.75rem;">Run Mode</button>
+                <button onclick="changeAnimation('idle')" class="btn btn-secondary btn-sm" style="font-size:0.75rem;">Idle Breath</button>
+              </div>
+            </div>
+
+            <!-- Weekly Completion Charts -->
+            <div class="card">
+              <div class="card-title">📊 Fitness Progress History</div>
+              <div style="position: relative; height: 180px;">
+                <canvas id="fitnessChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const mgr = window.stateManager;
+      let fitChart = null;
+
+      // Canvas character animation logic
+      let canvas, ctx;
+      let animFrame;
+      let animMode = 'idle'; // idle, stretch, cardio
+      let frameCount = 0;
+
+      function initCanvasAnimation() {
+        canvas = document.getElementById('activeWorkoutCanvas');
+        ctx = canvas.getContext('2d');
+        
+        // Match bounds
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          const centerX = canvas.width / 2;
+          const centerY = canvas.height / 2 + 10;
+          
+          frameCount++;
+
+          // Draw ground
+          ctx.beginPath();
+          ctx.moveTo(10, centerY + 30);
+          ctx.lineTo(canvas.width - 10, centerY + 30);
+          ctx.strokeStyle = '#7f9586';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Draw grass details
+          ctx.fillStyle = '#7f9586';
+          for(let i = 20; i < canvas.width; i += 60) {
+            ctx.fillRect(i, centerY + 28, 4, 3);
+          }
+
+          // Draw Forest helper character performing activities
+          ctx.save();
+          
+          if (animMode === 'idle') {
+            // Gentle breathing bounce
+            const scaleY = 1 + Math.sin(frameCount * 0.05) * 0.03;
+            const scaleX = 1 - Math.sin(frameCount * 0.05) * 0.02;
+            
+            ctx.translate(centerX, centerY + 30);
+            ctx.scale(scaleX, scaleY);
+            drawCharacter(0, -30);
+            
+          } else if (animMode === 'stretch') {
+            // Tilting / swaying stretching motion
+            const angle = Math.sin(frameCount * 0.04) * 0.2;
+            ctx.translate(centerX, centerY + 30);
+            ctx.rotate(angle);
+            drawCharacter(0, -30);
+            
+          } else if (animMode === 'cardio') {
+            // Running hop jump
+            const jumpY = Math.abs(Math.sin(frameCount * 0.15)) * -15;
+            const tilt = Math.sin(frameCount * 0.15) * 0.08;
+            
+            ctx.translate(centerX, centerY + 30 + jumpY);
+            ctx.rotate(tilt);
+            drawCharacter(0, -30);
+          }
+
+          ctx.restore();
+
+          animFrame = requestAnimationFrame(animate);
+        }
+
+        animate();
+      }
+
+      function drawCharacter(x, y) {
+        // Draw forest spirit body
+        ctx.fillStyle = '#fcf8f2';
+        ctx.strokeStyle = '#3d2a1d';
+        ctx.lineWidth = 2.5;
+
+        // Main body
+        ctx.beginPath();
+        ctx.arc(x, y + 5, 24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Ears
+        ctx.beginPath();
+        ctx.moveTo(x - 12, y - 14);
+        ctx.quadraticCurveTo(x - 20, y - 30, x - 10, y - 22);
+        ctx.fillStyle = '#fcf8f2';
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x + 12, y - 14);
+        ctx.quadraticCurveTo(x + 20, y - 30, x + 10, y - 22);
+        ctx.fillStyle = '#fcf8f2';
+        ctx.fill();
+        ctx.stroke();
+
+        // Eyes
+        ctx.fillStyle = '#3d2a1d';
+        ctx.beginPath();
+        ctx.arc(x - 8, y + 2, 2.5, 0, Math.PI * 2);
+        ctx.arc(x + 8, y + 2, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cheeks
+        ctx.fillStyle = '#fbbbb7';
+        ctx.beginPath();
+        ctx.arc(x - 13, y + 7, 3, 0, Math.PI * 2);
+        ctx.arc(x + 13, y + 7, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Mouth
+        ctx.beginPath();
+        ctx.arc(x, y + 7, 3, 0, Math.PI, false);
+        ctx.strokeStyle = '#3d2a1d';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Head Leaf Accessory
+        ctx.fillStyle = '#a3e2bc';
+        ctx.beginPath();
+        ctx.ellipse(x, y - 20, 5, 10, Math.PI/4, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      function changeAnimation(mode) {
+        animMode = mode;
+      }
+
+      function toggleWorkoutCompletion() {
+        mgr.data.workoutCompleted = !mgr.data.workoutCompleted;
+        if (mgr.data.workoutCompleted) {
+          mgr.addXP(20);
+          mgr.unlockBadge('gym_bunny');
+        }
+        mgr.save();
+        syncUI();
+      }
+
+      function renderFitnessChart() {
+        const ctxChart = document.getElementById('fitnessChart').getContext('2d');
+        const isLight = document.body.classList.contains('light-mode');
+        const textCol = isLight ? '#3d2a1d' : '#afc1b4';
+
+        if (fitChart) {
+          fitChart.destroy();
+        }
+
+        fitChart = new Chart(ctxChart, {
+          type: 'bar',
+          data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+              label: 'Workouts Completed',
+              data: [1, 0, 1, 1, 0, mgr.data.workoutCompleted ? 1 : 0, 0],
+              backgroundColor: 'rgba(78, 168, 173, 0.45)',
+              borderColor: '#4ea8ad',
+              borderWidth: 1.5,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: textCol } },
+              y: { max: 1, ticks: { stepSize: 1, color: textCol }, grid: { color: 'rgba(255,255,255,0.03)' } }
+            }
+          }
+        });
+      }
+
+      function syncUI() {
+        const data = mgr.data;
+        
+        // Sync button & completion statement
+        const btn = document.getElementById('btnLogWorkout');
+        if (data.workoutCompleted) {
+          document.getElementById('lblCompletedState').textContent = '🌟 Workout Logged & Completed!';
+          btn.textContent = 'Undo Completion';
+          btn.className = 'btn btn-secondary';
+          animMode = 'cardio';
+        } else {
+          document.getElementById('lblCompletedState').textContent = 'Daily workout not logged';
+          btn.textContent = 'Log Completed';
+          btn.className = 'btn btn-gold';
+          animMode = 'idle';
+        }
+
+        // Onboarding sync
+        const workoutContainer = document.getElementById('workoutPlansContainer');
+        const alertBox = document.getElementById('noProfileAlert');
+
+        if (data.profileSaved) {
+          alertBox.style.display = 'none';
+          
+          let level = 'Beginner';
+          if (data.profile.activity === 'moderate') level = 'Intermediate';
+          if (data.profile.activity === 'high') level = 'Advanced';
+          document.getElementById('workoutLevelBadge').textContent = level;
+
+          // Generate or load workouts
+          if (data.customWorkouts.length === 0) {
+            mgr.generateAILocalWorkoutPlan();
+          }
+
+          workoutContainer.innerHTML = '';
+          data.customWorkouts.forEach(w => {
+            workoutContainer.innerHTML += `
+              <div class="workout-step-card">
+                <div style="font-size: 1.8rem;">${w.icon}</div>
+                <div style="flex-grow: 1;">
+                  <h4 style="font-size: 0.95rem; color: var(--accent-gold);">${w.name} (${w.duration})</h4>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">${w.desc}</p>
+                </div>
+              </div>
+            `;
+          });
+
+        } else {
+          alertBox.style.display = 'block';
+          workoutContainer.innerHTML = '';
+        }
+
+        renderFitnessChart();
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        syncUI();
+        initCanvasAnimation();
+        window.addEventListener('wellbell_state_updated', syncUI);
+        window.addEventListener('wellbell_theme_changed', renderFitnessChart);
+      });
+    </script>
+  </body>
+</html>

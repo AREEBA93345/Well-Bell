@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Well-Bell | Focus & Work</title>
+    <link rel="stylesheet" href="Style.css" />
+    <script src="state.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <aside></aside>
+
+      <main>
+        <header>
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h1>⏱️ Focus & Productivity Zone</h1>
+              <p>Deep work is like walking a quiet forest path. Take it step-by-step.</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Tasks & Habits -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Task Manager -->
+            <div class="card">
+              <div class="card-title">
+                <span>📋 Cozy To-Do Manager</span>
+                <span id="taskStatText" style="font-size: 0.85rem; color: var(--text-muted);">0 completed</span>
+              </div>
+
+              <!-- Create Task Form -->
+              <div class="glass-panel">
+                <h4 style="margin-bottom: 10px; font-size: 0.9rem; color: var(--accent-gold);">Add New Task</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <input type="text" id="taskInput" placeholder="What task are we focusing on today?" />
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <select id="taskPriority">
+                      <option value="low">Low Priority</option>
+                      <option value="medium" selected>Medium Priority</option>
+                      <option value="high">High Priority</option>
+                    </select>
+                    <input type="text" id="taskProject" placeholder="Project name" />
+                    <input type="date" id="taskDeadline" />
+                  </div>
+                  <button onclick="createNewTask()" class="btn btn-gold" style="width: 100%;">Create Task</button>
+                </div>
+              </div>
+
+              <!-- Task Filters -->
+              <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+                <button onclick="filterTasks('all')" class="btn btn-secondary btn-sm" id="btnFilterAll" style="padding: 4px 10px; font-size: 0.8rem;">All</button>
+                <button onclick="filterTasks('pending')" class="btn btn-secondary btn-sm" id="btnFilterPending" style="padding: 4px 10px; font-size: 0.8rem;">Pending</button>
+                <button onclick="filterTasks('completed')" class="btn btn-secondary btn-sm" id="btnFilterCompleted" style="padding: 4px 10px; font-size: 0.8rem;">Completed</button>
+                <button onclick="filterTasks('cancelled')" class="btn btn-secondary btn-sm" id="btnFilterCancelled" style="padding: 4px 10px; font-size: 0.8rem;">Cancelled</button>
+                <button onclick="filterTasks('future')" class="btn btn-secondary btn-sm" id="btnFilterFuture" style="padding: 4px 10px; font-size: 0.8rem;">Future</button>
+              </div>
+
+              <!-- Tasks Container -->
+              <div class="checklist" id="tasksList" style="max-height: 350px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Habits Tracker -->
+            <div class="card">
+              <div class="card-title">🌱 Daily Habit Checklist</div>
+              <div class="checklist" id="habitsList"></div>
+              <div class="glass-panel" style="margin-top: 15px; margin-bottom: 0; display: flex; gap: 10px;">
+                <input type="text" id="newHabitInput" placeholder="Add custom habit (e.g. Read 15 mins)" style="flex-grow: 1;" />
+                <button onclick="addCustomHabit()" class="btn btn-gold">Add</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Focus Timer & Statistics -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Pomodoro Focus Timer -->
+            <div class="card">
+              <div class="card-title">⏱️ Cozy Pomodoro Forest</div>
+              <div class="pomodoro-wrapper">
+                <div class="timer-circle" id="timerCircle">
+                  <span class="timer-minutes" id="timerLabel">25:00</span>
+                  <span class="timer-label" id="timerPhase">Focus Time</span>
+                </div>
+
+                <!-- Timer Settings -->
+                <div style="display: flex; gap: 10px; justify-content: center; width: 100%;">
+                  <button onclick="setTimerPreset(25, 'Focus')" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.75rem;">25m Focus</button>
+                  <button onclick="setTimerPreset(5, 'Short Break')" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.75rem;">5m Break</button>
+                  <button onclick="setTimerPreset(15, 'Long Break')" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.75rem;">15m Break</button>
+                </div>
+
+                <div class="timer-controls">
+                  <button id="btnStartPause" onclick="toggleTimer()" class="btn btn-gold">Start Ticking</button>
+                  <button onclick="resetTimer()" class="btn btn-secondary">Reset</button>
+                </div>
+
+                <!-- Steaming Cup animation / wind down helper -->
+                <div id="windDownNotice" style="font-size: 0.82rem; font-style: italic; text-align: center; color: var(--text-muted); opacity: 0;">
+                  🍃 Cozy forest winds whisper... take a deep breath.
+                </div>
+              </div>
+            </div>
+
+            <!-- Productivity Stats -->
+            <div class="card" style="display: flex; flex-direction: column; gap: 15px;">
+              <div class="card-title">📊 Productivity Statistics</div>
+              
+              <div class="glass-panel" style="margin-bottom: 0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">Focus sessions completed</div>
+                  <div style="font-size: 1.5rem; font-weight: 800;" id="pomodoroCount">0 Pomodoros</div>
+                </div>
+                <div style="font-size: 2rem;">🦊</div>
+              </div>
+
+              <div class="glass-panel" style="margin-bottom: 0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">Minutes focused today</div>
+                  <div style="font-size: 1.5rem; font-weight: 800;" id="focusMinutes">0 mins</div>
+                </div>
+                <div style="font-size: 2rem;">🪵</div>
+              </div>
+
+              <!-- Animated Chart -->
+              <div style="position: relative; height: 160px; width: 100%;">
+                <canvas id="weeklyProdChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const mgr = window.stateManager;
+      let currentFilter = 'all';
+
+      // Timer variables
+      let timerInterval = null;
+      let timerDuration = 25 * 60; // 25 minutes
+      let timerRunning = false;
+      let activePreset = 25;
+      let activePhase = 'Focus';
+
+      // Tasks controller
+      function createNewTask() {
+        const text = document.getElementById('taskInput').value;
+        const priority = document.getElementById('taskPriority').value;
+        const project = document.getElementById('taskProject').value || 'General';
+        const deadline = document.getElementById('taskDeadline').value || new Date().toISOString().split('T')[0];
+
+        if (!text) return;
+
+        const newTask = {
+          id: Date.now(),
+          text,
+          status: 'pending',
+          priority,
+          project,
+          deadline,
+          dateCreated: new Date().toISOString().split('T')[0]
+        };
+
+        mgr.data.tasks.push(newTask);
+        mgr.addXP(10);
+        mgr.save();
+
+        document.getElementById('taskInput').value = '';
+        syncTasks();
+      }
+
+      function filterTasks(status) {
+        currentFilter = status;
+        
+        // Toggle buttons active state
+        ['All', 'Pending', 'Completed', 'Cancelled', 'Future'].forEach(s => {
+          document.getElementById(`btnFilter${s}`).className = 'btn btn-secondary btn-sm';
+        });
+        const activeBtn = document.getElementById(`btnFilter${status.charAt(0).toUpperCase() + status.slice(1)}`);
+        if (activeBtn) activeBtn.className = 'btn btn-gold btn-sm';
+
+        syncTasks();
+      }
+
+      function toggleTaskStatus(id) {
+        const t = mgr.data.tasks.find(tk => tk.id === id);
+        if (t) {
+          t.status = t.status === 'completed' ? 'pending' : 'completed';
+          if (t.status === 'completed') {
+            mgr.addXP(20);
+          }
+          mgr.save();
+          syncTasks();
+        }
+      }
+
+      function deleteTask(id) {
+        mgr.data.tasks = mgr.data.tasks.filter(t => t.id !== id);
+        mgr.save();
+        syncTasks();
+      }
+
+      function changeTaskStatus(id, newStatus) {
+        const t = mgr.data.tasks.find(tk => tk.id === id);
+        if (t) {
+          t.status = newStatus;
+          mgr.save();
+          syncTasks();
+        }
+      }
+
+      function syncTasks() {
+        const container = document.getElementById('tasksList');
+        container.innerHTML = '';
+        const today = new Date().toISOString().split('T')[0];
+
+        // Filter list
+        let list = mgr.data.tasks;
+        if (currentFilter === 'pending') list = list.filter(t => t.status === 'pending');
+        else if (currentFilter === 'completed') list = list.filter(t => t.status === 'completed');
+        else if (currentFilter === 'cancelled') list = list.filter(t => t.status === 'cancelled');
+        else if (currentFilter === 'future') list = list.filter(t => t.deadline > today && t.status === 'pending');
+
+        document.getElementById('taskStatText').textContent = `${mgr.data.tasks.filter(t => t.status === 'completed').length} completed`;
+
+        if (list.length === 0) {
+          container.innerHTML = `<p style="text-align:center; color: var(--text-dim); padding: 20px; font-style:italic;">No tasks here. Sit back and watch the clouds drift!</p>`;
+          return;
+        }
+
+        list.forEach(t => {
+          const isCompleted = t.status === 'completed';
+          const isCancelled = t.status === 'cancelled';
+          const isOverdue = t.deadline < today && t.status === 'pending';
+          
+          let borderCol = 'var(--text-dim)';
+          if (t.priority === 'high') borderCol = 'var(--color-physical)';
+          if (t.priority === 'medium') borderCol = 'var(--accent-gold)';
+          
+          container.innerHTML += `
+            <div class="checklist-item" style="border-left: 4px solid ${borderCol}; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1;">
+                <input type="checkbox" ${isCompleted ? 'checked' : ''} onclick="toggleTaskStatus(${t.id})">
+                <div style="line-height: 1.3;">
+                  <span style="${isCompleted ? 'text-decoration: line-through; color: var(--text-dim);' : ''} ${isCancelled ? 'text-decoration: line-through; opacity: 0.5;' : ''}">
+                    ${t.text}
+                  </span>
+                  <div style="font-size: 0.72rem; color: var(--text-muted);">
+                    💼 ${t.project} | 📅 Deadline: <span style="${isOverdue ? 'color: var(--color-physical); font-weight:800;' : ''}">${t.deadline}</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <select onchange="changeTaskStatus(${t.id}, this.value)" style="padding: 2px 6px; font-size: 0.75rem; width: 90px; height: 26px;">
+                  <option value="pending" ${t.status === 'pending' ? 'selected' : ''}>Pending</option>
+                  <option value="completed" ${t.status === 'completed' ? 'selected' : ''}>Complete</option>
+                  <option value="cancelled" ${t.status === 'cancelled' ? 'selected' : ''}>Cancel</option>
+                </select>
+                <button onclick="deleteTask(${t.id})" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 0.75rem;">🗑️</button>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // Habits Manager
+      function addCustomHabit() {
+        const text = document.getElementById('newHabitInput').value;
+        if (!text) return;
+        mgr.data.habits.push({ id: Date.now(), text, checked: false });
+        mgr.addXP(15);
+        mgr.save();
+        document.getElementById('newHabitInput').value = '';
+        syncHabits();
+      }
+
+      function toggleHabit(id) {
+        const h = mgr.data.habits.find(hb => hb.id === id);
+        if (h) {
+          h.checked = !h.checked;
+          if (h.checked) {
+            mgr.addXP(15);
+            // increment habits streak helper
+            mgr.data.streaks.dailyCheck += 1;
+          }
+          mgr.save();
+          syncHabits();
+        }
+      }
+
+      function syncHabits() {
+        const listDiv = document.getElementById('habitsList');
+        listDiv.innerHTML = '';
+        mgr.data.habits.forEach(h => {
+          listDiv.innerHTML += `
+            <label class="checklist-item">
+              <input type="checkbox" ${h.checked ? 'checked' : ''} onclick="toggleHabit(${h.id})">
+              <span>${h.text}</span>
+            </label>
+          `;
+        });
+      }
+
+      // Timer Logic
+      function setTimerPreset(mins, phase) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        activePreset = mins;
+        activePhase = phase;
+        timerDuration = mins * 60;
+        
+        document.getElementById('btnStartPause').textContent = 'Start Ticking';
+        document.getElementById('timerCircle').classList.remove('active');
+        document.getElementById('windDownNotice').style.opacity = '0';
+        updateTimerDisplay();
+      }
+
+      function updateTimerDisplay() {
+        const m = Math.floor(timerDuration / 60).toString().padStart(2, '0');
+        const s = (timerDuration % 60).toString().padStart(2, '0');
+        document.getElementById('timerLabel').textContent = `${m}:${s}`;
+        document.getElementById('timerPhase').textContent = activePhase;
+      }
+
+      function toggleTimer() {
+        if (timerRunning) {
+          clearInterval(timerInterval);
+          timerRunning = false;
+          document.getElementById('btnStartPause').textContent = 'Resume Ticking';
+          document.getElementById('timerCircle').classList.remove('active');
+        } else {
+          timerRunning = true;
+          document.getElementById('btnStartPause').textContent = 'Pause Ticking';
+          document.getElementById('timerCircle').classList.add('active');
+          
+          timerInterval = setInterval(() => {
+            timerDuration--;
+            updateTimerDisplay();
+            
+            // Micro animation warning
+            if (timerDuration <= 10) {
+              document.getElementById('windDownNotice').style.opacity = '1';
+            }
+
+            if (timerDuration <= 0) {
+              clearInterval(timerInterval);
+              timerRunning = false;
+              document.getElementById('timerCircle').classList.remove('active');
+              
+              if (activePhase === 'Focus') {
+                mgr.data.pomodorosCompleted += 1;
+                mgr.data.focusMinutesToday += activePreset;
+                mgr.addXP(50);
+                mgr.unlockBadge('productivity_guru');
+                alert("⏰ Cozy chime rings! Your focus session is completed. Go stretch!");
+              } else {
+                alert("⏰ Break over! Let's sit down and focus again.");
+              }
+              
+              mgr.save();
+              resetTimer();
+              syncUI();
+            }
+          }, 1000);
+        }
+      }
+
+      function resetTimer() {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        timerDuration = activePreset * 60;
+        document.getElementById('btnStartPause').textContent = 'Start Ticking';
+        document.getElementById('timerCircle').classList.remove('active');
+        document.getElementById('windDownNotice').style.opacity = '0';
+        updateTimerDisplay();
+      }
+
+      // Sync stats & Charts
+      let statsChart = null;
+
+      function renderStatsChart() {
+        const ctx = document.getElementById('weeklyProdChart').getContext('2d');
+        const isLight = document.body.classList.contains('light-mode');
+        const textCol = isLight ? '#3d2a1d' : '#afc1b4';
+
+        if (statsChart) {
+          statsChart.destroy();
+        }
+
+        statsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+              label: 'Focus Minutes',
+              data: [40, 25, 60, 45, 90, mgr.data.focusMinutesToday, 0],
+              borderColor: '#ffad42',
+              backgroundColor: 'rgba(255, 173, 66, 0.15)',
+              fill: true,
+              tension: 0.3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: textCol } },
+              y: { ticks: { color: textCol }, grid: { color: 'rgba(255,255,255,0.03)' } }
+            }
+          }
+        });
+      }
+
+      function syncUI() {
+        document.getElementById('pomodoroCount').textContent = `${mgr.data.pomodorosCompleted} Pomodoros`;
+        document.getElementById('focusMinutes').textContent = `${mgr.data.focusMinutesToday} mins`;
+        syncTasks();
+        syncHabits();
+        renderStatsChart();
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        syncUI();
+        window.addEventListener('wellbell_state_updated', syncUI);
+        window.addEventListener('wellbell_theme_changed', renderStatsChart);
+      });
+    </script>
+  </body>
+</html>

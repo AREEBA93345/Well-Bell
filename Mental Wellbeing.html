@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Well-Bell | Mental Health & Companion</title>
+    <link rel="stylesheet" href="Style.css" />
+    <script src="state.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* Character animation styles */
+      .companion-portrait {
+        width: 130px;
+        height: 130px;
+        background: radial-gradient(circle, var(--accent-gold-glow), transparent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto;
+        position: relative;
+      }
+      .character-svg {
+        width: 100px;
+        height: 100px;
+        animation: float-character 4s infinite ease-in-out;
+      }
+      @keyframes float-character {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-8px) rotate(2deg); }
+      }
+      /* Emojis buttons */
+      .mood-btn {
+        background: rgba(255,255,255,0.05);
+        border: 2px solid transparent;
+        font-size: 1.6rem;
+        padding: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: var(--transition);
+        width: 50px;
+        height: 50px;
+        display: grid;
+        place-content: center;
+      }
+      body.light-mode .mood-btn {
+        background: rgba(0,0,0,0.03);
+      }
+      .mood-btn.active {
+        background: var(--accent-gold-glow);
+        border-color: var(--accent-gold);
+        transform: scale(1.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <aside></aside>
+
+      <main>
+        <header>
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h1>🌸 Mental Health & Companion</h1>
+              <p>Meet Bella, your companion. Here, we rest, reflect, and share warm thoughts.</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Virtual Companion Bella -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <div class="card" style="display: flex; flex-direction: column;">
+              <div class="card-title">🍃 Chat with Bella</div>
+              
+              <!-- Bella Portrait & Animated SVG -->
+              <div class="companion-portrait">
+                <!-- Cute Ghibli forest spirit helper SVG -->
+                <svg class="character-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Body -->
+                  <circle cx="50" cy="55" r="32" fill="#f4eae1" stroke="#3d2a1d" stroke-width="2.5" />
+                  <!-- Ears -->
+                  <path d="M28 32 Q20 15 34 25" fill="#f4eae1" stroke="#3d2a1d" stroke-width="2.5" />
+                  <path d="M72 32 Q80 15 66 25" fill="#f4eae1" stroke="#3d2a1d" stroke-width="2.5" />
+                  <!-- Leaf Head Accessory -->
+                  <path d="M50 24 Q60 5 50 0 Q40 5 50 24" fill="#a3e2bc" stroke="#3d2a1d" stroke-width="2" />
+                  <!-- Eyes -->
+                  <circle cx="40" cy="50" r="3" fill="#3d2a1d" />
+                  <circle cx="60" cy="50" r="3" fill="#3d2a1d" />
+                  <!-- Cheeks (Blossoms) -->
+                  <circle cx="36" cy="56" r="4" fill="#fbbbb7" opacity="0.8" />
+                  <circle cx="64" cy="56" r="4" fill="#fbbbb7" opacity="0.8" />
+                  <!-- Cute W-shaped mouth -->
+                  <path d="M47 56 Q50 59 53 56 Q56 59 59 56" fill="none" stroke="#3d2a1d" stroke-width="2.5" stroke-linecap="round" />
+                  <!-- Tiny belly design -->
+                  <path d="M42 68 Q50 64 58 68" fill="none" stroke="#afc1b4" stroke-width="2" />
+                  <path d="M45 74 Q50 71 55 74" fill="none" stroke="#afc1b4" stroke-width="2" />
+                </svg>
+              </div>
+
+              <div style="text-align: center; margin-top: 10px; font-weight: 800; font-family: var(--font-header);">Bella, Forest Helper</div>
+              
+              <!-- Conversations Box -->
+              <div class="chat-window" id="chatBox"></div>
+
+              <!-- Input row -->
+              <div class="chat-input-row">
+                <input type="text" id="chatInput" placeholder="Tell Bella how you are feeling..." style="flex-grow: 1;" />
+                <button onclick="sendChatMessage()" class="btn btn-gold">Send</button>
+              </div>
+            </div>
+
+            <!-- Affirmations and Support Exercises -->
+            <div class="card">
+              <div class="card-title">📖 Daily Positive Affirmations</div>
+              <div class="glass-panel" style="text-align: center; padding: 25px 15px; margin-bottom: 0;">
+                <p id="affirmationText" style="font-family: var(--font-header); font-size: 1.15rem; font-style: italic; line-height: 1.6; font-weight: 600; color: var(--accent-gold);">
+                  "I am allowed to walk slowly. My value is not dictated by speed, but by the kindness I carry."
+                </p>
+                <button onclick="shuffleAffirmation()" class="btn" style="margin-top: 15px; padding: 6px 12px; font-size: 0.8rem;">Request Affirmation</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Mood Checkin & Gratitude Logs -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Mood Checkin Form -->
+            <div class="card">
+              <div class="card-title">🎭 Quick Mood Check-in</div>
+              
+              <div style="display: flex; justify-content: space-around; margin: 15px 0;">
+                <button onclick="selectMood(1)" id="moodBtn1" class="mood-btn" title="Very Heavy">😞</button>
+                <button onclick="selectMood(2)" id="moodBtn2" class="mood-btn" title="Heavy">😐</button>
+                <button onclick="selectMood(3)" id="moodBtn3" class="mood-btn" title="Calm / Okay">😊</button>
+                <button onclick="selectMood(4)" id="moodBtn4" class="mood-btn" title="Joyful">🥰</button>
+                <button onclick="selectMood(5)" id="moodBtn5" class="mood-btn" title="Vibrant / Light">⭐</button>
+              </div>
+
+              <div>
+                <label for="stressSlider">Stress Level (1 = Calm Breeze, 5 = Heavy Storm)</label>
+                <input type="range" id="stressSlider" min="1" max="5" step="1" style="width: 100%; cursor: pointer;" />
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
+                  <span>Calm Breeze</span>
+                  <span>Heavy Storm</span>
+                </div>
+              </div>
+
+              <div style="margin-top: 15px;">
+                <label for="moodNote">Reflective Thoughts (Note)</label>
+                <textarea id="moodNote" rows="2" placeholder="What clouds or sunbeams crossed your sky?"></textarea>
+              </div>
+
+              <button onclick="submitMoodCheckIn()" class="btn btn-gold" style="width: 100%; margin-top: 15px;">Save Check-in</button>
+            </div>
+
+            <!-- Gratitude Journal Widget -->
+            <div class="card">
+              <div class="card-title">🍂 Cozy Gratitude Log</div>
+              <div class="glass-panel" style="display: flex; gap: 10px;">
+                <input type="text" id="gratitudeInput" placeholder="Something you are grateful for today..." style="flex-grow: 1;" />
+                <button onclick="addGratitude()" class="btn btn-gold">Log</button>
+              </div>
+              <ul id="gratitudeList" style="font-size: 0.88rem; padding-left: 20px; line-height: 1.6;"></ul>
+            </div>
+
+            <!-- Mood trend Graph -->
+            <div class="card">
+              <div class="card-title">📊 Emotional Trend Charts</div>
+              <div style="position: relative; height: 160px;">
+                <canvas id="moodChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const mgr = window.stateManager;
+      let selectedMoodVal = 3;
+      let moodTrendChart = null;
+
+      // Affirmation database
+      const AFFIRMATIONS = [
+        "I am allowed to walk slowly. My value is not dictated by speed, but by the kindness I carry.",
+        "Like Totoro under the umbrella, wait out the storm with peace in your heart.",
+        "Your path is unique; the forest pines do not compete with the cherry blossoms.",
+        "A quiet day of rest is just as productive as a day of labor.",
+        "Mist clears, sunbeams rise, and you are surrounded by warm opportunities.",
+        "Every small task completed is a seed planted in your magical garden."
+      ];
+
+      function shuffleAffirmation() {
+        const idx = Math.floor(Math.random() * AFFIRMATIONS.length);
+        document.getElementById('affirmationText').textContent = `"${AFFIRMATIONS[idx]}"`;
+      }
+
+      function selectMood(val) {
+        selectedMoodVal = val;
+        [1,2,3,4,5].forEach(i => {
+          document.getElementById(`moodBtn${i}`).classList.remove('active');
+        });
+        document.getElementById(`moodBtn${val}`).classList.add('active');
+      }
+
+      function submitMoodCheckIn() {
+        const stress = parseInt(document.getElementById('stressSlider').value);
+        const note = document.getElementById('moodNote').value;
+        const date = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+
+        // Save checkin
+        mgr.data.moodCheckIn = { mood: selectedMoodVal, stress, note };
+        mgr.data.moodHistory.push({ date, mood: selectedMoodVal, stress, note });
+        mgr.addXP(25);
+        mgr.unlockBadge('mindful_soul');
+        mgr.save();
+
+        document.getElementById('moodNote').value = '';
+        syncUI();
+      }
+
+      function addGratitude() {
+        const item = document.getElementById('gratitudeInput').value;
+        if (!item) return;
+
+        mgr.data.gratitudeEntries.push(item);
+        mgr.addXP(10);
+        mgr.save();
+
+        document.getElementById('gratitudeInput').value = '';
+        syncUI();
+      }
+
+      function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        mgr.respondToCompanionChat(text);
+        input.value = '';
+        syncUI();
+      }
+
+      // Sync Chats window scroll
+      function scrollChatToBottom() {
+        const chatBox = document.getElementById('chatBox');
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      function renderMoodChart() {
+        const ctx = document.getElementById('moodChart').getContext('2d');
+        const isLight = document.body.classList.contains('light-mode');
+        const textCol = isLight ? '#3d2a1d' : '#afc1b4';
+
+        const history = mgr.data.moodHistory.slice(-5); // get last 5 entries
+        const labels = history.map(h => h.date).length > 0 ? history.map(h => h.date) : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+        const moods = history.map(h => h.mood).length > 0 ? history.map(h => h.mood) : [3, 4, 3, 5, selectedMoodVal];
+        const stress = history.map(h => h.stress).length > 0 ? history.map(h => h.stress) : [2, 3, 2, 4, parseInt(document.getElementById('stressSlider').value)];
+
+        if (moodTrendChart) {
+          moodTrendChart.destroy();
+        }
+
+        moodTrendChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'Mood Index (1-5)',
+                data: moods,
+                borderColor: '#fae19c',
+                backgroundColor: 'transparent',
+                tension: 0.2
+              },
+              {
+                label: 'Stress Index (1-5)',
+                data: stress,
+                borderColor: '#fbbbb7',
+                backgroundColor: 'transparent',
+                tension: 0.2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: textCol } },
+              y: { min: 1, max: 5, ticks: { stepSize: 1, color: textCol }, grid: { color: 'rgba(255,255,255,0.03)' } }
+            }
+          }
+        });
+      }
+
+      function syncUI() {
+        const data = mgr.data;
+
+        // Emojis active selection
+        selectMood(data.moodCheckIn.mood);
+        document.getElementById('stressSlider').value = data.moodCheckIn.stress;
+
+        // Render Chats
+        const chatBox = document.getElementById('chatBox');
+        chatBox.innerHTML = '';
+        data.companionLogs.forEach(c => {
+          chatBox.innerHTML += `
+            <div class="chat-bubble ${c.sender}">
+              <div>${c.text}</div>
+              <div class="bubble-meta">${c.time}</div>
+            </div>
+          `;
+        });
+        scrollChatToBottom();
+
+        // Render Gratitudes
+        const listDiv = document.getElementById('gratitudeList');
+        listDiv.innerHTML = '';
+        const defaultGratitudes = [' Steaming mug of coffee', ' A warm breeze through the leaves', ' Quiet focus session'];
+        const list = data.gratitudeEntries.length > 0 ? data.gratitudeEntries : defaultGratitudes;
+        list.forEach(g => {
+          listDiv.innerHTML += `<li>${g}</li>`;
+        });
+
+        renderMoodChart();
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        syncUI();
+        window.addEventListener('wellbell_state_updated', syncUI);
+        window.addEventListener('wellbell_theme_changed', renderMoodChart);
+        
+        // Listen for enter key in chat
+        document.getElementById('chatInput').addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') sendChatMessage();
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Well-Bell | Cozy Diary</title>
+    <link rel="stylesheet" href="Style.css" />
+    <script src="state.js"></script>
+    <style>
+      .editor-toolbar {
+        display: flex;
+        gap: 8px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 8px;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+        border: 1.5px solid rgba(60, 84, 67, 0.4);
+        border-bottom: none;
+      }
+      body.light-mode .editor-toolbar {
+        background: rgba(255, 255, 255, 0.6);
+        border-color: rgba(199, 185, 175, 0.5);
+      }
+      .editor-btn {
+        background: none;
+        border: none;
+        color: var(--text-main);
+        cursor: pointer;
+        padding: 4px 8px;
+        font-weight: 700;
+        border-radius: 4px;
+        transition: var(--transition);
+        box-shadow: none;
+        font-size: 0.85rem;
+      }
+      .editor-btn:hover {
+        background: rgba(255, 173, 66, 0.15);
+        color: var(--accent-gold);
+        transform: none;
+        box-shadow: none;
+      }
+      .diary-textarea {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        resize: vertical;
+        min-height: 200px;
+        line-height: 1.6;
+      }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        margin-top: 10px;
+      }
+      .calendar-day {
+        background: rgba(0,0,0,0.2);
+        aspect-ratio: 1;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        position: relative;
+        cursor: pointer;
+        border: 1px solid rgba(255,255,255,0.03);
+      }
+      body.light-mode .calendar-day {
+        background: rgba(255,255,255,0.5);
+        border-color: rgba(0,0,0,0.03);
+      }
+      .calendar-day.active {
+        border-color: var(--accent-gold);
+        background: var(--accent-gold-glow);
+      }
+      .calendar-day .mood-indicator {
+        font-size: 0.85rem;
+        position: absolute;
+        bottom: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <aside></aside>
+
+      <main>
+        <header>
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h1>✍️ Cozy Daily Diary</h1>
+              <p>Ink your memories and thoughts down, where the forest breeze holds your secrets.</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Rich Text Editor & Entry Logs -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Write Entry Card -->
+            <div class="card" id="editorCard">
+              <div class="card-title">
+                <span>✍️ Write Today's Entry</span>
+                <span style="font-size:0.8rem; color:var(--text-muted);" id="diaryDateLabel">June 10, 2026</span>
+              </div>
+
+              <!-- Reflection Suggestions -->
+              <div class="glass-panel" style="margin-bottom:15px; font-size:0.85rem;">
+                <span style="color:var(--accent-gold); font-weight:700;">💡 Reflection Suggestion:</span>
+                <span id="reflectionPromptText">"What is a small, quiet moment that made you smile today?"</span>
+                <button onclick="shufflePrompt()" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:0.7rem; float:right;">Shuffle</button>
+              </div>
+
+              <!-- Formatting Toolbar -->
+              <div class="editor-toolbar">
+                <button onclick="formatText('bold')" class="editor-btn">B</button>
+                <button onclick="formatText('italic')" class="editor-btn"><i>I</i></button>
+                <button onclick="formatText('bullet')" class="editor-btn">List</button>
+                <button onclick="formatText('clear')" class="editor-btn" style="margin-left:auto;">Clear</button>
+              </div>
+              <textarea class="diary-textarea" id="diaryContent" placeholder="Dear Diary, today was a beautiful walk in..."></textarea>
+
+              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-top: 15px; gap: 15px;">
+                <!-- Mood tags selector -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size:0.85rem; font-weight:700;">Mood:</span>
+                  <select id="diaryMood" style="width: auto; padding: 6px 10px;">
+                    <option value="😊">Happy 😊</option>
+                    <option value="😌">Calm 😌</option>
+                    <option value="😰">Stressed 😰</option>
+                    <option value="🥱">Sleepy 🥱</option>
+                    <option value="🤔">Reflective 🤔</option>
+                  </select>
+                </div>
+
+                <!-- Privacy Lock Switch -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size:0.85rem; font-weight:700;">Lock Entry:</span>
+                  <input type="password" id="diaryLockPass" placeholder="Passcode (optional)" style="width:120px; padding: 6px;" />
+                </div>
+              </div>
+
+              <!-- Achievement Log Input -->
+              <div class="glass-panel" style="margin-top: 15px; margin-bottom: 15px;">
+                <h4 style="font-size:0.85rem; color:var(--color-diet); margin-bottom:6px;">🏆 Log a Daily Achievement</h4>
+                <input type="text" id="diaryAchievement" placeholder="e.g. Completed a massive presentation! / Made delicious miso soup." />
+              </div>
+
+              <button onclick="saveDiaryEntry()" class="btn btn-gold" style="width:100%;">Save to Diary Bag</button>
+            </div>
+
+            <!-- Lock Shield Layer (Privacy lock overlay) -->
+            <div class="card" id="lockShieldCard" style="display:none; text-align:center; padding: 40px 20px;">
+              <div style="font-size: 3rem; margin-bottom: 15px;">🔒</div>
+              <h2 style="font-family:var(--font-header); margin-bottom:10px;">Your Journal is Locked</h2>
+              <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">Please enter the passcode to view and edit your private entries.</p>
+              <div style="max-width:240px; margin:0 auto; display:flex; gap:10px;">
+                <input type="password" id="unlockPassInput" placeholder="Passcode" style="padding:10px;" />
+                <button onclick="tryUnlockDiary()" class="btn btn-gold">Unlock</button>
+              </div>
+            </div>
+
+            <!-- Past Entries Table / List -->
+            <div class="card" id="entriesListCard">
+              <div class="card-title">
+                <span>📖 Saved Memories</span>
+                <input type="text" id="searchEntries" placeholder="🔍 Search entries..." oninput="syncEntries()" style="width:180px; padding: 4px 10px; font-size:0.8rem;" />
+              </div>
+              <div id="diaryEntriesContainer" style="display:flex; flex-direction:column; gap:15px; max-height: 400px; overflow-y:auto;"></div>
+            </div>
+          </div>
+
+          <!-- Right Column: Calendar View & Local AI Growth Insights -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Privacy Lock Setup Widget -->
+            <div class="card">
+              <div class="card-title">🛡️ Journal Lock Controls</div>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+                Secure your thoughts. Setting a global lock will request your password whenever you open the journal.
+              </p>
+              <div style="display:flex; gap:10px;">
+                <input type="password" id="globalLockSet" placeholder="Enter Global Passcode" />
+                <button onclick="toggleGlobalLock()" id="btnGlobalLockToggle" class="btn btn-gold" style="font-size:0.8rem; padding:10px;">Lock Book</button>
+              </div>
+            </div>
+
+            <!-- Calendar Mood Logger View -->
+            <div class="card">
+              <div class="card-title">📅 Diary Calendar Grid</div>
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">
+                <span>June 2026</span>
+                <span>5 entries logged</span>
+              </div>
+              <div class="calendar-grid" id="diaryCalGrid"></div>
+            </div>
+
+            <!-- Local AI Reflection & Growth Insights -->
+            <div class="card">
+              <div class="card-title" style="color:var(--accent-gold);">✨ Local AI Growth Insights</div>
+              <div class="glass-panel" style="margin-bottom:0;" id="growthInsightsPanel">
+                <p style="font-size:0.85rem; line-height:1.5; color:var(--text-muted);">
+                  Write today's entries to unlock growth metrics, mood cycles, and positive suggestions based on your logged vocabulary.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const mgr = window.stateManager;
+      
+      const PROMPTS = [
+        "What is a small, quiet moment that made you smile today?",
+        "What is a struggle you faced, and how did you breathe through it?",
+        "If you could describe today as a flavor of tea, what would it be?",
+        "Who is someone you are glad exists, and why?",
+        "What is a healthy choice you made for your physical self today?",
+        "What is a project or habit you are excited to grow tomorrow?"
+      ];
+
+      let globalDiaryPasscode = localStorage.getItem('wellbell_global_diary_passcode') || '';
+      let isUnlockedSession = !globalDiaryPasscode; // Unlocked if no passcode
+
+      function shufflePrompt() {
+        const idx = Math.floor(Math.random() * PROMPTS.length);
+        document.getElementById('reflectionPromptText').textContent = `"${PROMPTS[idx]}"`;
+      }
+
+      function formatText(style) {
+        const txt = document.getElementById('diaryContent');
+        const start = txt.selectionStart;
+        const end = txt.selectionEnd;
+        const sel = txt.value.substring(start, end);
+        
+        if (style === 'bold') {
+          txt.value = txt.value.substring(0, start) + `**${sel}**` + txt.value.substring(end);
+        } else if (style === 'italic') {
+          txt.value = txt.value.substring(0, start) + `*${sel}*` + txt.value.substring(end);
+        } else if (style === 'bullet') {
+          txt.value = txt.value.substring(0, start) + `\n- ${sel}` + txt.value.substring(end);
+        } else if (style === 'clear') {
+          txt.value = '';
+        }
+        txt.focus();
+      }
+
+      function toggleGlobalLock() {
+        const pass = document.getElementById('globalLockSet').value.trim();
+        if (globalDiaryPasscode) {
+          // Unlock/disable global lock
+          localStorage.removeItem('wellbell_global_diary_passcode');
+          globalDiaryPasscode = '';
+          isUnlockedSession = true;
+          alert("🔓 Global lock disabled.");
+        } else {
+          if (!pass) {
+            alert("Please input a password to lock the book.");
+            return;
+          }
+          localStorage.setItem('wellbell_global_diary_passcode', pass);
+          globalDiaryPasscode = pass;
+          isUnlockedSession = false;
+          alert("🔒 Global lock enabled!");
+        }
+        document.getElementById('globalLockSet').value = '';
+        syncUI();
+      }
+
+      function tryUnlockDiary() {
+        const val = document.getElementById('unlockPassInput').value;
+        if (val === globalDiaryPasscode) {
+          isUnlockedSession = true;
+          document.getElementById('unlockPassInput').value = '';
+          syncUI();
+        } else {
+          alert("❌ Incorrect passcode. The lock stands firm.");
+        }
+      }
+
+      function saveDiaryEntry() {
+        const content = document.getElementById('diaryContent').value.trim();
+        const mood = document.getElementById('diaryMood').value;
+        const lock = document.getElementById('diaryLockPass').value.trim();
+        const ach = document.getElementById('diaryAchievement').value.trim();
+        const today = new Date().toISOString().split('T')[0];
+
+        if (!content) return;
+
+        // Check if there is an achievement to log
+        if (ach) {
+          // Push to state achievements
+          if (!mgr.data.achievementsLog) mgr.data.achievementsLog = [];
+          mgr.data.achievementsLog.unshift({ text: ach, date: today });
+          mgr.addXP(15);
+        }
+
+        // Add or overwrite today's entry
+        const existingIdx = mgr.data.diaryEntries.findIndex(d => d.date === today);
+        const newEntry = {
+          date: today,
+          content,
+          mood,
+          password: lock,
+          unlocked: !lock
+        };
+
+        if (existingIdx >= 0) {
+          mgr.data.diaryEntries[existingIdx] = newEntry;
+        } else {
+          mgr.data.diaryEntries.unshift(newEntry);
+        }
+
+        mgr.addXP(40);
+        mgr.unlockBadge('golden_writer');
+        mgr.save();
+
+        document.getElementById('diaryContent').value = '';
+        document.getElementById('diaryLockPass').value = '';
+        document.getElementById('diaryAchievement').value = '';
+        
+        syncUI();
+      }
+
+      function deleteEntry(date) {
+        mgr.data.diaryEntries = mgr.data.diaryEntries.filter(d => d.date !== date);
+        mgr.save();
+        syncUI();
+      }
+
+      function syncEntries() {
+        const search = document.getElementById('searchEntries').value.toLowerCase();
+        const container = document.getElementById('diaryEntriesContainer');
+        container.innerHTML = '';
+
+        const filtered = mgr.data.diaryEntries.filter(e => e.content.toLowerCase().includes(search));
+        
+        if (filtered.length === 0) {
+          container.innerHTML = `<p style="text-align:center; font-style:italic; color:var(--text-dim); padding:20px;">No matching entries found.</p>`;
+          return;
+        }
+
+        filtered.forEach(e => {
+          const isEntryLocked = e.password && !isUnlockedSession;
+          container.innerHTML += `
+            <div class="glass-panel" style="margin-bottom:0; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:800; font-family:var(--font-header); color:var(--accent-gold);">
+                  ${e.mood} Entry on ${e.date}
+                </span>
+                <button onclick="deleteEntry('${e.date}')" class="btn btn-secondary btn-sm" style="padding:2px 6px;">🗑️</button>
+              </div>
+              <p style="font-size:0.9rem; white-space:pre-wrap; line-height:1.5;">
+                ${isEntryLocked ? '🔒 <i>[This entry is private & locked]</i>' : e.content}
+              </p>
+            </div>
+          `;
+        });
+      }
+
+      function syncCalendar() {
+        const grid = document.getElementById('diaryCalGrid');
+        grid.innerHTML = '';
+        
+        // Render 28 days for June 2026
+        for(let i = 1; i <= 28; i++) {
+          const dateStr = `2026-06-${i.toString().padStart(2, '0')}`;
+          const entry = mgr.data.diaryEntries.find(d => d.date === dateStr);
+          
+          grid.innerHTML += `
+            <div class="calendar-day ${entry ? 'active' : ''}" title="${entry ? 'Memory written!' : 'Quiet day'}">
+              <span>${i}</span>
+              ${entry ? `<span class="mood-indicator">${entry.mood}</span>` : ''}
+            </div>
+          `;
+        }
+      }
+
+      function generateLocalDiaryInsights() {
+        const text = mgr.data.diaryEntries.map(e => e.content).join(' ').toLowerCase();
+        const panel = document.getElementById('growthInsightsPanel');
+
+        if (!text) {
+          panel.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted);">Log your first memories to analyze vocabulary trends!</p>`;
+          return;
+        }
+
+        // Simple token counting
+        let positiveWords = 0;
+        let stressWords = 0;
+
+        const posTokens = ['happy', 'love', 'nature', 'cozy', 'accomplished', 'smile', 'joy', 'wonderful', 'friend', 'rested'];
+        const stressTokens = ['stressed', 'tired', 'sad', 'worried', 'difficult', 'overwhelmed', 'hurt', 'hard', 'scared'];
+
+        posTokens.forEach(w => {
+          const count = (text.match(new RegExp(w, 'g')) || []).length;
+          positiveWords += count;
+        });
+
+        stressTokens.forEach(w => {
+          const count = (text.match(new RegExp(w, 'g')) || []).length;
+          stressWords += count;
+        });
+
+        let summary = "";
+        if (positiveWords > stressWords) {
+          summary = "Your logs carry a warm forest breeze! Words of joy and coziness dominate. You are successfully cultivating mindfulness.";
+        } else if (stressWords > positiveWords) {
+          summary = "A few dark rainclouds are hovering in your pages. You've mentioned feeling tired or overwhelmed. Take some extra ME time to brew tea and recover.";
+        } else {
+          summary = "Your entries are completely balanced, expressing equal parts effort, struggle, and peace. Keep writing!";
+        }
+
+        panel.innerHTML = `
+          <p style="font-size:0.88rem; line-height:1.55; font-weight: 500;">
+            "${summary}"
+          </p>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
+            Cozy words logged: <strong>${positiveWords}</strong> | Heavy words logged: <strong>${stressWords}</strong>
+          </div>
+        `;
+      }
+
+      function syncUI() {
+        const editor = document.getElementById('editorCard');
+        const shield = document.getElementById('lockShieldCard');
+
+        if (globalDiaryPasscode && !isUnlockedSession) {
+          editor.style.display = 'none';
+          shield.style.display = 'block';
+          document.getElementById('btnGlobalLockToggle').textContent = 'Unlock Book';
+          document.getElementById('entriesListCard').style.display = 'none';
+        } else {
+          editor.style.display = 'block';
+          shield.style.display = 'none';
+          document.getElementById('entriesListCard').style.display = 'block';
+          document.getElementById('btnGlobalLockToggle').textContent = globalDiaryPasscode ? 'Disable Lock' : 'Lock Book';
+          
+          document.getElementById('diaryDateLabel').textContent = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+          syncEntries();
+          syncCalendar();
+          generateLocalDiaryInsights();
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        shufflePrompt();
+        syncUI();
+        window.addEventListener('wellbell_state_updated', syncUI);
+      });
+    </script>
+  </body>
+</html>

@@ -3,89 +3,550 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Well-Bell | Diet</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>Well-Bell | Diet & Nutrition</title>
+    <link rel="stylesheet" href="Style.css" />
+    <script src="state.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
-    <header>
-      <h1>Well-Bell Diet Tracker</h1>
-      <p>Track your nutrition, meals, water intake, and health goals</p>
-    </header>
-    <main>
-      <section>
-        <h2>User Profile</h2>
-        <form>
-          <label for="age">Age:</label>
-          <input id="age" type="number" name="age" />
+    <div class="app-container">
+      <aside></aside>
 
-          <br /><br />
+      <main>
+        <header>
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h1>🍱 Cozy Nutrition & Hydration</h1>
+              <p>Nourish your body and spirit like a home-cooked Ghibli meal.</p>
+            </div>
+          </div>
+        </header>
 
-          <label for="gender">Gender:</label>
-          <select id="gender" required>
-          <option value="Select Gender" disabled selected>Select Gender</option>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-          <option value="other">Other</option>
-          </select>
+        <div class="dashboard-grid">
+          <!-- Left Column: Setup and Logging -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Onboarding Section -->
+            <div class="card" id="profileCard">
+              <div class="card-title">
+                <span>🌱 Your Nutrition Profile</span>
+                <button id="editProfileBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; display: none;">Edit Profile</button>
+              </div>
 
-          <br><br>
+              <!-- Setup Form -->
+              <form id="profileForm">
+                <div class="form-group-row">
+                  <div>
+                    <label for="age">Age</label>
+                    <input id="age" type="number" required />
+                  </div>
+                  <div>
+                    <label for="gender">Gender</label>
+                    <select id="gender" required>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
 
-        <label for="height">Height (cm)</label>
-        <input id="height" type="number" name="height">
+                <div class="form-group-row">
+                  <div>
+                    <label for="height">Height (cm)</label>
+                    <input id="height" type="number" required />
+                  </div>
+                  <div>
+                    <label for="weight">Weight (kg)</label>
+                    <input id="weight" type="number" required />
+                  </div>
+                </div>
 
-        <br><br>
+                <div class="form-group-row">
+                  <div>
+                    <label for="goal">Nutrition Goal</label>
+                    <select id="goal" required>
+                      <option value="maintain">Maintain Equilibrium</option>
+                      <option value="lose">Gentle Weight Loss</option>
+                      <option value="gain">Gain Cozy Muscle</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="activity">Activity Level</label>
+                    <select id="activity" required>
+                      <option value="low">Gentle (Low)</option>
+                      <option value="moderate">Active (Moderate)</option>
+                      <option value="high">Vibrant (High)</option>
+                    </select>
+                  </div>
+                </div>
 
-        <label for="Weight">Weight (kg)</label>
-        <input id="Weight" type="number" name="Weight">
+                <div class="form-group-row">
+                  <div>
+                    <label for="dietPref">Diet Preference</label>
+                    <select id="dietPref" required>
+                      <option value="Veg">Vegetarian</option>
+                      <option value="Non-veg">Non-Vegetarian</option>
+                      <option value="Both">Omnivore / Mixed</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="allergies">Allergies (e.g. Nuts, Dairy)</label>
+                    <input id="allergies" type="text" placeholder="None" />
+                  </div>
+                </div>
 
-        <br><br>
+                <div class="form-group-row">
+                  <div>
+                    <label for="likes">Foods Liked</label>
+                    <input id="likes" type="text" placeholder="Apples, rice, soup" />
+                  </div>
+                  <div>
+                    <label for="dislikes">Foods Disliked</label>
+                    <input id="dislikes" type="text" placeholder="Mushrooms, broccoli" />
+                  </div>
+                </div>
 
-        <label for="Activity">Activity level:</label>
-        <select id="Activity" required>
-          <option value="Select" disabled select>Select</option>
-          <option value="low">Low</option>
-          <option value="moderate">Moderate</option>
-          <option value="high">High</option>
-          </select>
+                <button type="submit" class="btn btn-gold">Save Profile & Generate Plan</button>
+              </form>
 
-          <br><br>
+              <!-- Profile Summary View -->
+              <div id="profileSummary" style="display: none; line-height: 1.6;">
+                <div class="glass-panel" style="margin-bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center;">
+                  <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Age & Gender</div>
+                    <div style="font-weight: 700;" id="sumAgeGender">25 / Female</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Height & Weight</div>
+                    <div style="font-weight: 700;" id="sumHeightWeight">165cm / 60kg</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Weekly Goal</div>
+                    <div style="font-weight: 700; color: var(--accent-gold);" id="sumGoal">Maintain</div>
+                  </div>
+                </div>
+                <div style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
+                  Preferences: <strong id="sumPrefs" style="color: var(--text-main);">Veg</strong> | 
+                  Allergies: <strong id="sumAllergies" style="color: var(--color-physical);">None</strong>
+                </div>
+              </div>
+            </div>
 
-          <label for="allergies">Allergies:</label>
-          <input id="allergies" type="text" name="allergies">
+            <!-- Daily Food Log & Calorie Progress -->
+            <div class="card">
+              <div class="card-title">🍲 Daily Food Log & Calorie Tracker</div>
+              
+              <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px; gap: 15px;">
+                <div class="glass-panel" style="margin-bottom: 0; text-align: center;">
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">Calories Consumed</div>
+                  <div style="font-size: 1.8rem; font-weight: 800; color: var(--accent-gold);" id="calDisplay">0 / 2000 kcal</div>
+                </div>
+                <div class="glass-panel" style="margin-bottom: 0;">
+                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Macro Balance</div>
+                  <div style="font-size: 0.82rem; display: flex; flex-direction: column; gap: 4px;">
+                    <div>Protein: <span id="proteinBarVal">0g</span> / <span id="proteinTarget">100g</span></div>
+                    <div class="xp-bar-bg"><div class="xp-bar-fill" id="proteinFill" style="background: var(--color-physical); width: 0%;"></div></div>
+                    <div>Carbs: <span id="carbsBarVal">0g</span> / <span id="carbsTarget">220g</span></div>
+                    <div class="xp-bar-bg"><div class="xp-bar-fill" id="carbsFill" style="background: var(--color-work); width: 0%;"></div></div>
+                  </div>
+                </div>
+              </div>
 
-          <br><br>
+              <!-- Quick Log Form -->
+              <div class="glass-panel" style="margin-bottom: 15px;">
+                <h4 style="margin-bottom: 10px; font-size: 0.9rem; color: var(--accent-gold);">Log a Meal</h4>
+                <div style="display: flex; gap: 10px;">
+                  <select id="mealType">
+                    <option value="breakfast">Breakfast</option>
+                    <option value="lunch">Lunch</option>
+                    <option value="dinner">Dinner</option>
+                    <option value="snacks">Snacks</option>
+                  </select>
+                  <input type="text" id="foodText" placeholder="e.g. Avocado Toast + Tea" style="flex-grow: 1;" />
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
+                  <input type="number" id="mealCal" placeholder="Kcal" style="padding: 6px;" />
+                  <input type="number" id="mealProtein" placeholder="Protein (g)" style="padding: 6px;" />
+                  <input type="number" id="mealCarbs" placeholder="Carbs (g)" style="padding: 6px;" />
+                  <button onclick="logMealEntry()" class="btn" style="padding: 6px;">Log</button>
+                </div>
+              </div>
 
+              <div class="checklist">
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkBreakfast" class="meal-check" data-meal="breakfast">
+                  <span>Breakfast: <strong id="lblBreakfast">Not logged</strong></span>
+                </label>
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkLunch" class="meal-check" data-meal="lunch">
+                  <span>Lunch: <strong id="lblLunch">Not logged</strong></span>
+                </label>
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkDinner" class="meal-check" data-meal="dinner">
+                  <span>Dinner: <strong id="lblDinner">Not logged</strong></span>
+                </label>
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkSnacks" class="meal-check" data-meal="snacks">
+                  <span>Snacks: <strong id="lblSnacks">Not logged</strong></span>
+                </label>
+              </div>
+            </div>
 
-           <label for="likes">Food you like:</label>
-          <input id="likes" type="text" name="likes">
+            <!-- Cheat Day Tracker -->
+            <div class="card">
+              <div class="card-title">🍕 Cheat Meal Tracker</div>
+              <div class="form-group-row">
+                <input type="text" id="cheatItemInput" placeholder="What was the cheat meal? (e.g. Double Cheeseburger)" />
+                <input type="number" id="cheatCalInput" placeholder="Extra Kcal (e.g. 500)" />
+              </div>
+              <button onclick="logCheatMeal()" class="btn btn-secondary" style="margin-top: 10px;">Add Cheat Entry</button>
+              <div class="glass-panel" style="margin-top: 15px; margin-bottom: 0;">
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--color-sleep);">Weekly Logs: <span id="cheatCount">0 meals</span> (+<span id="cheatCals">0</span> kcal)</div>
+                <ul id="cheatList" style="font-size: 0.85rem; padding-left: 20px; margin-top: 8px; line-height: 1.5;"></ul>
+              </div>
+            </div>
+          </div>
 
-          <br><br>
+          <!-- Right Column: Planner, Recipes, and Groceries -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Water Intake Tracker -->
+            <div class="card">
+              <div class="card-title">💧 Cozy Hydration Tracker</div>
+              <div class="progress-ring-container" style="padding: 10px;">
+                <div style="text-align: center;">
+                  <div style="font-size: 2.2rem; font-family: var(--font-accent); font-weight: 800; color: var(--primary);" id="waterValText">0.0 L</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">Target: <span id="waterTargetText">2.5 L</span></div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1;">
+                  <button onclick="addWater(0.25)" class="btn btn-gold">+ 250ml Glass</button>
+                  <button onclick="addWater(0.5)" class="btn">+ 500ml Bottle</button>
+                  <button onclick="resetWater()" class="btn btn-secondary">Reset Today</button>
+                </div>
+              </div>
+            </div>
 
+            <!-- AI Meal Planner -->
+            <div class="card">
+              <div class="card-title">✨ AI Meal Planner Suggestions</div>
+              <div id="aiPlanContainer" style="display: none;">
+                <div class="glass-panel">
+                  <h4 style="color: var(--accent-gold); margin-bottom: 5px;">Today's Target Plan</h4>
+                  <p style="font-size: 0.88rem; line-height: 1.5;">
+                    🍳 <strong>Breakfast</strong>: <span id="aiBreakfast">--</span><br>
+                    🥗 <strong>Lunch</strong>: <span id="aiLunch">--</span><br>
+                    🍲 <strong>Dinner</strong>: <span id="aiDinner">--</span><br>
+                    🍓 <strong>Snack</strong>: <span id="aiSnack">--</span>
+                  </p>
+                </div>
 
-           <label for="Dislikes"> Food you dislike:</label>
-          <input id="Dislikes" type="text" name="Dislikes">
+                <div class="glass-panel" style="margin-bottom: 0;">
+                  <h4 style="color: var(--color-diet); margin-bottom: 10px;">Healthy Ghibli Recipes</h4>
+                  <div id="aiRecipes" style="font-size: 0.82rem; display: flex; flex-direction: column; gap: 12px; max-height: 250px; overflow-y: auto;"></div>
+                </div>
 
-          <br><br>
+                <button onclick="compileGroceryList()" class="btn btn-gold" style="width: 100%; margin-top: 15px;">Generate Grocery List</button>
+              </div>
+              <div id="aiPlanPlaceholder" style="text-align: center; padding: 20px; font-style: italic; color: var(--text-muted);">
+                Please save your profile details first to auto-generate customized Ghibli recipes and diet plans!
+              </div>
+            </div>
 
-          <label for="diet">Diet prefrence</label>
-          <select id="diet" required>
-          <option value="Select" disabled select>Select</option>
-          <option value="Veg">Veg</option>
-          <option value="Non-veg">Non-veg</option>
-          <option value="Both">Both</option>
-          </select>
+            <!-- Grocery List -->
+            <div class="card" id="groceryCard" style="display: none;">
+              <div class="card-title">🛒 Auto-Generated Grocery List</div>
+              <div class="checklist" id="groceryList"></div>
+            </div>
 
+            <!-- Weight Log Table -->
+            <div class="card">
+              <div class="card-title">⚖️ Weight Log History</div>
+              <div class="form-group-row">
+                <input type="number" step="0.1" id="newWeightInput" placeholder="Weigh-in (kg)" />
+                <button onclick="addNewWeight()" class="btn" style="padding: 10px;">Add Entry</button>
+              </div>
+              <div style="max-height: 180px; overflow-y: auto; margin-top: 15px;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Weight</th>
+                    </tr>
+                  </thead>
+                  <tbody id="weightHistoryTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
 
-          <br><br>
+    <script>
+      // Load user profile
+      const mgr = window.stateManager;
 
-          <button type="submit">Save Profile</button>
-           <button type="reset">Edit</button>
-        </form>
-      </section>
+      document.getElementById('profileForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        mgr.data.profile.age = parseInt(document.getElementById('age').value);
+        mgr.data.profile.gender = document.getElementById('gender').value;
+        mgr.data.profile.height = parseInt(document.getElementById('height').value);
+        mgr.data.profile.weight = parseFloat(document.getElementById('weight').value);
+        mgr.data.profile.goal = document.getElementById('goal').value;
+        mgr.data.profile.activity = document.getElementById('activity').value;
+        mgr.data.profile.dietPreference = document.getElementById('dietPref').value;
+        mgr.data.profile.allergies = document.getElementById('allergies').value;
+        mgr.data.profile.likes = document.getElementById('likes').value;
+        mgr.data.profile.dislikes = document.getElementById('dislikes').value;
+        
+        mgr.data.profileSaved = true;
+        mgr.addXP(40);
+        mgr.unlockBadge('first_step');
+        
+        // Generate Plan
+        mgr.generateAILocalDietPlan();
+        mgr.generateAILocalWorkoutPlan();
+        mgr.save();
+        
+        syncUI();
+      });
 
-      
+      document.getElementById('editProfileBtn').addEventListener('click', () => {
+        mgr.data.profileSaved = false;
+        mgr.save();
+        syncUI();
+      });
 
+      function addWater(amount) {
+        mgr.data.waterIntake = parseFloat((mgr.data.waterIntake + amount).toFixed(2));
+        mgr.addXP(Math.round(amount * 20));
+        if (mgr.data.waterIntake >= 3.0) {
+          mgr.unlockBadge('water_champion');
+        }
+        mgr.save();
+        syncUI();
+      }
 
-    </main>
+      function resetWater() {
+        mgr.data.waterIntake = 0;
+        mgr.save();
+        syncUI();
+      }
+
+      function logMealEntry() {
+        const type = document.getElementById('mealType').value;
+        const food = document.getElementById('foodText').value;
+        const cal = parseInt(document.getElementById('mealCal').value) || 0;
+        const protein = parseInt(document.getElementById('mealProtein').value) || 0;
+        const carbs = parseInt(document.getElementById('mealCarbs').value) || 0;
+
+        if (!food) return;
+
+        mgr.data.meals[type].eaten = true;
+        mgr.data.meals[type].food = food;
+        mgr.data.caloriesConsumed += cal;
+        mgr.data.proteinConsumed += protein;
+        mgr.data.carbsConsumed += carbs;
+
+        mgr.addXP(15);
+        mgr.save();
+        
+        // Reset inputs
+        document.getElementById('foodText').value = '';
+        document.getElementById('mealCal').value = '';
+        document.getElementById('mealProtein').value = '';
+        document.getElementById('mealCarbs').value = '';
+        
+        syncUI();
+      }
+
+      function logCheatMeal() {
+        const item = document.getElementById('cheatItemInput').value;
+        const kcal = parseInt(document.getElementById('cheatCalInput').value) || 0;
+        if (!item) return;
+
+        mgr.data.cheatMealsThisWeek += 1;
+        mgr.data.extraCalories += kcal;
+        mgr.data.cheatItems.push({ item, kcal, date: new Date().toLocaleDateString() });
+        mgr.save();
+
+        document.getElementById('cheatItemInput').value = '';
+        document.getElementById('cheatCalInput').value = '';
+        syncUI();
+      }
+
+      function compileGroceryList() {
+        if (!mgr.data.dietPlan) return;
+        
+        const card = document.getElementById('groceryCard');
+        const listDiv = document.getElementById('groceryList');
+        card.style.display = 'block';
+        listDiv.innerHTML = '';
+
+        // Derive ingredients list
+        const items = new Set();
+        mgr.data.dietPlan.recipes.forEach(r => {
+          r.ingredients.split(',').forEach(i => items.add(i.trim()));
+        });
+        // Default Ghibli staples
+        items.add('Organic green tea leaves');
+        items.add('Miso broth paste');
+        items.add('Fresh farm milk');
+
+        items.forEach((item, index) => {
+          listDiv.innerHTML += `
+            <label class="checklist-item">
+              <input type="checkbox">
+              <span>${item}</span>
+            </label>
+          `;
+        });
+      }
+
+      function addNewWeight() {
+        const weightVal = parseFloat(document.getElementById('newWeightInput').value);
+        if (!weightVal) return;
+
+        // Push weigh-in to weight logs (we reuse sleep log formatting or create custom profiles)
+        const date = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+        mgr.data.profile.weight = weightVal; // update current weight
+        
+        // Push into a historical record
+        if (!mgr.data.weightLogs) mgr.data.weightLogs = [];
+        mgr.data.weightLogs.unshift({ date, weight: weightVal });
+        
+        mgr.addXP(10);
+        mgr.save();
+        document.getElementById('newWeightInput').value = '';
+        syncUI();
+      }
+
+      // Sync meals checkbox click
+      document.querySelectorAll('.meal-check').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+          const mType = e.target.dataset.meal;
+          mgr.data.meals[mType].eaten = e.target.checked;
+          if (e.target.checked && !mgr.data.meals[mType].food) {
+            mgr.data.meals[mType].food = "Default clean meal";
+          }
+          mgr.save();
+          syncUI();
+        });
+      });
+
+      function syncUI() {
+        const data = mgr.data;
+        const p = data.profile;
+
+        // Form vs Summary switching
+        if (data.profileSaved) {
+          document.getElementById('profileForm').style.display = 'none';
+          document.getElementById('profileSummary').style.display = 'block';
+          document.getElementById('editProfileBtn').style.display = 'block';
+
+          document.getElementById('sumAgeGender').textContent = `${p.age} yrs / ${p.gender}`;
+          document.getElementById('sumHeightWeight').textContent = `${p.height}cm / ${p.weight}kg`;
+          document.getElementById('sumGoal').textContent = p.goal.toUpperCase();
+          document.getElementById('sumPrefs').textContent = `${p.dietPreference} Mode`;
+          document.getElementById('sumAllergies').textContent = p.allergies || 'None';
+        } else {
+          document.getElementById('profileForm').style.display = 'block';
+          document.getElementById('profileSummary').style.display = 'none';
+          document.getElementById('editProfileBtn').style.display = 'none';
+
+          // Pre-fill form
+          document.getElementById('age').value = p.age;
+          document.getElementById('gender').value = p.gender;
+          document.getElementById('height').value = p.height;
+          document.getElementById('weight').value = p.weight;
+          document.getElementById('goal').value = p.goal;
+          document.getElementById('activity').value = p.activity;
+          document.getElementById('dietPref').value = p.dietPreference;
+          document.getElementById('allergies').value = p.allergies;
+          document.getElementById('likes').value = p.likes;
+          document.getElementById('dislikes').value = p.dislikes;
+        }
+
+        // Calorie Sync
+        const targetCal = data.dietPlan ? data.dietPlan.targetCal : 2000;
+        document.getElementById('calDisplay').textContent = `${data.caloriesConsumed} / ${targetCal} kcal`;
+        
+        const targetP = data.dietPlan ? data.dietPlan.proteinGrams : 100;
+        const targetC = data.dietPlan ? data.dietPlan.carbGrams : 220;
+        document.getElementById('proteinTarget').textContent = `${targetP}g`;
+        document.getElementById('proteinBarVal').textContent = `${data.proteinConsumed}g`;
+        document.getElementById('proteinFill').style.width = `${Math.min(100, (data.proteinConsumed/targetP)*100)}%`;
+
+        document.getElementById('carbsTarget').textContent = `${targetC}g`;
+        document.getElementById('carbsBarVal').textContent = `${data.carbsConsumed}g`;
+        document.getElementById('carbsFill').style.width = `${Math.min(100, (data.carbsConsumed/targetC)*100)}%`;
+
+        // Checkbox sync
+        document.getElementById('chkBreakfast').checked = data.meals.breakfast.eaten;
+        document.getElementById('lblBreakfast').textContent = data.meals.breakfast.food || 'Not logged';
+        document.getElementById('chkLunch').checked = data.meals.lunch.eaten;
+        document.getElementById('lblLunch').textContent = data.meals.lunch.food || 'Not logged';
+        document.getElementById('chkDinner').checked = data.meals.dinner.eaten;
+        document.getElementById('lblDinner').textContent = data.meals.dinner.food || 'Not logged';
+        document.getElementById('chkSnacks').checked = data.meals.snacks.eaten;
+        document.getElementById('lblSnacks').textContent = data.meals.snacks.food || 'Not logged';
+
+        // Cheat meals sync
+        document.getElementById('cheatCount').textContent = `${data.cheatMealsThisWeek} meal(s)`;
+        document.getElementById('cheatCals').textContent = data.extraCalories;
+        const cheatList = document.getElementById('cheatList');
+        cheatList.innerHTML = data.cheatItems.map(c => `<li>${c.item} (+${c.kcal} kcal) on ${c.date}</li>`).join('');
+
+        // Water sync
+        document.getElementById('waterValText').textContent = `${data.waterIntake} L`;
+        document.getElementById('waterTargetText').textContent = `${data.waterTarget} L`;
+
+        // AI Plan suggestions sync
+        if (data.dietPlan) {
+          document.getElementById('aiPlanContainer').style.display = 'block';
+          document.getElementById('aiPlanPlaceholder').style.display = 'none';
+
+          document.getElementById('aiBreakfast').textContent = data.dietPlan.meals.breakfast;
+          document.getElementById('aiLunch').textContent = data.dietPlan.meals.lunch;
+          document.getElementById('aiDinner').textContent = data.dietPlan.meals.dinner;
+          document.getElementById('aiSnack').textContent = data.dietPlan.meals.snack;
+
+          const recContainer = document.getElementById('aiRecipes');
+          recContainer.innerHTML = data.dietPlan.recipes.map(r => `
+            <div style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+              <h5 style="color: var(--accent-gold); font-size: 0.88rem; margin-bottom: 2px;">🍳 ${r.name}</h5>
+              <p style="margin-bottom: 2px;"><strong>Needs</strong>: ${r.ingredients}</p>
+              <p style="color: var(--text-muted); font-size: 0.8rem;">${r.steps}</p>
+            </div>
+          `).join('');
+        } else {
+          document.getElementById('aiPlanContainer').style.display = 'none';
+          document.getElementById('aiPlanPlaceholder').style.display = 'block';
+        }
+
+        // Weight Table sync
+        const weightTable = document.getElementById('weightHistoryTable');
+        weightTable.innerHTML = '';
+        const defaultWeights = [{ date: '1 June', weight: 72 }, { date: '8 June', weight: 71 }];
+        const logs = data.weightLogs || defaultWeights;
+        logs.forEach(l => {
+          weightTable.innerHTML += `
+            <tr>
+              <td>${l.date}</td>
+              <td>${l.weight} kg</td>
+            </tr>
+          `;
+        });
+        
+        // Dispatch global sync for index values
+        const globalScore = mgr.getCumulativeScore();
+        const asideIndex = document.getElementById('sidebarIndexVal');
+        if (asideIndex) asideIndex.textContent = `${globalScore}%`;
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        syncUI();
+        window.addEventListener('wellbell_state_updated', syncUI);
+      });
+    </script>
   </body>
 </html>

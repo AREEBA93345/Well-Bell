@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Well-Bell | Money Management</title>
+    <link rel="stylesheet" href="Style.css" />
+    <script src="state.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <aside></aside>
+
+      <main>
+        <header>
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h1>🪙 Cozy Money Management</h1>
+              <p>Keep your savings bag full and your budgets mindful like a peaceful merchant.</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Transactions Ledger & Budget Planners -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Ledger list -->
+            <div class="card">
+              <div class="card-title">📖 Money Ledger & Transactions</div>
+              
+              <!-- Quick Add Transaction -->
+              <div class="glass-panel">
+                <h4 style="margin-bottom: 10px; font-size: 0.9rem; color: var(--accent-gold);">Add Income or Expense</h4>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                  <input type="text" id="txDesc" placeholder="Description (e.g. Tea, Rent)" />
+                  <input type="number" id="txAmount" placeholder="Amount ($)" />
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                  <select id="txType">
+                    <option value="expense">Expense (-)</option>
+                    <option value="income">Income (+)</option>
+                  </select>
+                  <select id="txCategory">
+                    <option value="Salary">Salary</option>
+                    <option value="Groceries">Groceries</option>
+                    <option value="Leisure">Leisure / Cafe</option>
+                    <option value="Subscriptions">Subscriptions</option>
+                    <option value="Bills">Bills / Rent</option>
+                    <option value="Events">Special Events</option>
+                  </select>
+                  <button onclick="addTransaction()" class="btn btn-gold" style="padding: 10px 0;">Add Entry</button>
+                </div>
+              </div>
+
+              <!-- Transaction Table -->
+              <div style="max-height: 250px; overflow-y: auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Description</th>
+                      <th>Category</th>
+                      <th>Amount</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="txTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Budget Planners & Special Expenses -->
+            <div class="card">
+              <div class="card-title">🎉 Event & Vacation Planners</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="glass-panel" style="margin-bottom: 0;">
+                  <h4 style="color: var(--accent-gold); margin-bottom: 8px;">Vacation Planning</h4>
+                  <div style="display: flex; gap: 6px; flex-direction: column; font-size: 0.85rem;">
+                    <div>Target Cost: <input type="number" id="vacaGoal" style="padding:4px; font-size:0.8rem;" value="1200"></div>
+                    <div>Saved So Far: <input type="number" id="vacaSaved" style="padding:4px; font-size:0.8rem;" value="300"></div>
+                  </div>
+                </div>
+
+                <div class="glass-panel" style="margin-bottom: 0;">
+                  <h4 style="color: var(--color-diet); margin-bottom: 8px;">Festivals & Birthdays</h4>
+                  <div style="display: flex; gap: 6px; flex-direction: column; font-size: 0.85rem;">
+                    <div>Gift Budget: <input type="number" id="giftBudget" style="padding:4px; font-size:0.8rem;" value="150"></div>
+                    <div>Festival Fund: <input type="number" id="festivalBudget" style="padding:4px; font-size:0.8rem;" value="300"></div>
+                  </div>
+                </div>
+              </div>
+              <button onclick="saveEventBudgets()" class="btn" style="width: 100%; margin-top: 15px;">Save Planner Limits</button>
+            </div>
+          </div>
+
+          <!-- Right Column: AI Calculations, Goals, and awareness -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- AI Savings Calculations -->
+            <div class="card">
+              <div class="card-title" style="color: var(--accent-gold);">🍂 AI Financial Advisor</div>
+              
+              <div class="glass-panel" style="margin-bottom: 10px;">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Recommended Daily Spending Limit</div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: var(--color-diet);" id="aiDailySpendLimit">$20.00</div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Calculated using income minus 30% recommended savings.</p>
+              </div>
+
+              <div class="glass-panel" style="margin-bottom: 10px;">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Recommended Monthly Savings</div>
+                <div style="font-size: 1.4rem; font-weight: 800;" id="aiRecSavings">$300.00</div>
+              </div>
+
+              <div class="glass-panel" style="margin-bottom: 0;">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Goal Completion Estimates</div>
+                <div style="font-size: 0.95rem; font-weight: 700; margin-top: 5px;">
+                  Savings Goal: <strong id="savingsGoalEta" style="color: var(--accent-gold);">-- months</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Savings Goals & Emergency Fund -->
+            <div class="card">
+              <div class="card-title">🪙 Savings Goals & Funds</div>
+              
+              <div class="glass-panel" style="margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.88rem; font-weight: 700;">
+                  <span>Cozy Savings Goal</span>
+                  <span id="savingsFraction">$400 / $1000</span>
+                </div>
+                <div class="xp-bar-bg"><div class="xp-bar-fill" id="savingsFill" style="background: var(--primary); width: 40%;"></div></div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                  <input type="number" id="addSavingsAmt" placeholder="Add Amount ($)" style="padding:4px; font-size:0.8rem;" />
+                  <button onclick="addSavingsGoalMoney()" class="btn btn-gold btn-sm" style="padding:4px 10px; font-size:0.8rem;">Save</button>
+                </div>
+              </div>
+
+              <div class="glass-panel" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.88rem; font-weight: 700;">
+                  <span>Emergency Forest Fund</span>
+                  <span id="emergencyFraction">$500 / $2000</span>
+                </div>
+                <div class="xp-bar-bg"><div class="xp-bar-fill" id="emergencyFill" style="background: var(--color-sleep); width: 25%;"></div></div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                  <input type="number" id="addEmergAmt" placeholder="Add Amount ($)" style="padding:4px; font-size:0.8rem;" />
+                  <button onclick="addEmergencyMoney()" class="btn btn-gold btn-sm" style="padding:4px 10px; font-size:0.8rem;">Save</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subscription Reminders -->
+            <div class="card">
+              <div class="card-title">🔔 Subscription Reminders</div>
+              <div class="checklist" id="subsList"></div>
+              <div class="glass-panel" style="margin-top: 12px; margin-bottom: 0; display: flex; gap: 8px;">
+                <input type="text" id="subName" placeholder="Name" style="padding:6px; font-size:0.85rem;" />
+                <input type="number" id="subCost" placeholder="Cost ($)" style="padding:6px; font-size:0.85rem; width:80px;" />
+                <button onclick="addSub()" class="btn btn-gold btn-sm" style="font-size:0.8rem;">Add</button>
+              </div>
+            </div>
+
+            <!-- Investment Awareness -->
+            <div class="card">
+              <div class="card-title">📖 Forest Wisdom: Investments</div>
+              <p style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted);">
+                🦊 <strong>Merchant Sage says</strong>: "True abundance is like planting a walnut tree. It grows slow, but compound interest bears sweet nuts. Keep 3 to 6 months of nuts in your Emergency Fund, then consider index funds to grow your seeds."
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const mgr = window.stateManager;
+
+      function addTransaction() {
+        const desc = document.getElementById('txDesc').value;
+        const amt = parseFloat(document.getElementById('txAmount').value);
+        const type = document.getElementById('txType').value;
+        const category = document.getElementById('txCategory').value;
+
+        if (!desc || !amt) return;
+
+        const newTx = {
+          id: Date.now(),
+          desc,
+          amount: amt,
+          type,
+          category,
+          date: new Date().toISOString().split('T')[0]
+        };
+
+        mgr.data.transactions.unshift(newTx);
+        
+        // reward financial mindfulness
+        if (type === 'expense') {
+          mgr.addXP(5);
+        } else {
+          mgr.addXP(15);
+        }
+        
+        mgr.save();
+
+        document.getElementById('txDesc').value = '';
+        document.getElementById('txAmount').value = '';
+        
+        syncUI();
+      }
+
+      function deleteTx(id) {
+        mgr.data.transactions = mgr.data.transactions.filter(t => t.id !== id);
+        mgr.save();
+        syncUI();
+      }
+
+      function addSavingsGoalMoney() {
+        const val = parseFloat(document.getElementById('addSavingsAmt').value);
+        if (!val) return;
+        mgr.data.savingsBalance += val;
+        mgr.addXP(15);
+        mgr.save();
+        document.getElementById('addSavingsAmt').value = '';
+        syncUI();
+      }
+
+      function addEmergencyMoney() {
+        const val = parseFloat(document.getElementById('addEmergAmt').value);
+        if (!val) return;
+        mgr.data.emergencyFundBalance += val;
+        mgr.addXP(15);
+        mgr.save();
+        document.getElementById('addEmergAmt').value = '';
+        syncUI();
+      }
+
+      function saveEventBudgets() {
+        const vaca = parseFloat(document.getElementById('vacaGoal').value) || 1200;
+        const vacaSave = parseFloat(document.getElementById('vacaSaved').value) || 300;
+        const gift = parseFloat(document.getElementById('giftBudget').value) || 150;
+        const fest = parseFloat(document.getElementById('festivalBudget').value) || 300;
+
+        mgr.data.specialBudgets.vacation = { goal: vaca, current: vacaSave };
+        mgr.data.specialBudgets.gifts.goal = gift;
+        mgr.data.specialBudgets.festivals.goal = fest;
+        
+        mgr.addXP(10);
+        mgr.save();
+        syncUI();
+      }
+
+      function addSub() {
+        const name = document.getElementById('subName').value;
+        const cost = parseFloat(document.getElementById('subCost').value);
+        if (!name || !cost) return;
+
+        mgr.data.subscriptions.push({ id: Date.now(), name, cost, billDate: 'Monthly' });
+        mgr.addXP(10);
+        mgr.save();
+        document.getElementById('subName').value = '';
+        document.getElementById('subCost').value = '';
+        syncUI();
+      }
+
+      function deleteSub(id) {
+        mgr.data.subscriptions = mgr.data.subscriptions.filter(s => s.id !== id);
+        mgr.save();
+        syncUI();
+      }
+
+      function syncUI() {
+        const data = mgr.data;
+        const ledger = document.getElementById('txTableBody');
+        ledger.innerHTML = '';
+
+        data.transactions.forEach(t => {
+          const isExp = t.type === 'expense';
+          ledger.innerHTML += `
+            <tr>
+              <td><strong>${t.desc}</strong> <div style="font-size:0.75rem; color:var(--text-muted);">${t.date}</div></td>
+              <td><span style="font-size:0.75rem; background:rgba(255,255,255,0.06); padding:3px 8px; border-radius:10px;">${t.category}</span></td>
+              <td style="font-weight:800; color: ${isExp ? 'var(--color-physical)' : 'var(--color-diet)'};">
+                ${isExp ? '-' : '+'}$${t.amount.toFixed(2)}
+              </td>
+              <td>
+                <button onclick="deleteTx(${t.id})" class="btn btn-secondary btn-sm" style="padding:2px 6px;">🗑️</button>
+              </td>
+            </tr>
+          `;
+        });
+
+        // AI Advisor sync
+        const limits = mgr.calculateFinancialLimits();
+        document.getElementById('aiDailySpendLimit').textContent = `$${limits.dailySpendLimit.toFixed(2)}`;
+        document.getElementById('aiRecSavings').textContent = `$${limits.recommendedSavings.toFixed(2)}`;
+        document.getElementById('savingsGoalEta').textContent = `${limits.goalCompletionMonths} months`;
+
+        // Check if user spent today and update badge
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todaySpend = data.transactions
+          .filter(t => t.type === 'expense' && t.date === todayStr)
+          .reduce((sum, t) => sum + t.amount, 0);
+        if (todaySpend > 0 && todaySpend <= limits.dailySpendLimit) {
+          mgr.unlockBadge('saving_guru');
+        }
+
+        // Savings indicators
+        document.getElementById('savingsFraction').textContent = `$${data.savingsBalance} / $${data.savingsGoal}`;
+        document.getElementById('savingsFill').style.width = `${Math.min(100, (data.savingsBalance / data.savingsGoal)*100)}%`;
+
+        document.getElementById('emergencyFraction').textContent = `$${data.emergencyFundBalance} / $${data.emergencyFundGoal}`;
+        document.getElementById('emergencyFill').style.width = `${Math.min(100, (data.emergencyFundBalance / data.emergencyFundGoal)*100)}%`;
+
+        // Subscriptions list
+        const subsDiv = document.getElementById('subsList');
+        subsDiv.innerHTML = '';
+        data.subscriptions.forEach(s => {
+          subsDiv.innerHTML += `
+            <div class="checklist-item" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>🎟️ ${s.name} ($${s.cost}/mo)</span>
+              <button onclick="deleteSub(${s.id})" class="btn btn-secondary btn-sm" style="padding:2px 6px;">🗑️</button>
+            </div>
+          `;
+        });
+
+        // Pre-fill Planners values
+        document.getElementById('vacaGoal').value = data.specialBudgets.vacation.goal;
+        document.getElementById('vacaSaved').value = data.specialBudgets.vacation.current;
+        document.getElementById('giftBudget').value = data.specialBudgets.gifts.goal;
+        document.getElementById('festivalBudget').value = data.specialBudgets.festivals.goal;
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        syncUI();
+        window.addEventListener('wellbell_state_updated', syncUI);
+      });
+    </script>
+  </body>
+</html>

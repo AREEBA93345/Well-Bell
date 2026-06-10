@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Well-Bell | ME Time</title>
+    <link rel="stylesheet" href="Style.css" />
+    <script src="state.js"></script>
+    <style>
+      .sound-slider-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: var(--border-glass);
+        padding: 12px 18px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+      }
+      .audio-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-card);
+        border: var(--border-cozy);
+        cursor: pointer;
+        font-size: 1.25rem;
+        transition: var(--transition);
+        box-shadow: none;
+      }
+      .audio-btn.playing {
+        border-color: var(--accent-gold);
+        background: var(--accent-gold-glow);
+        box-shadow: 0 0 10px var(--accent-gold-glow);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <aside></aside>
+
+      <main>
+        <header>
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h1>☕ Cozy ME Time Zone</h1>
+              <p>Pause, breathe, and enjoy the quiet sounds of nature. You are exactly where you need to be.</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Ambient Mixer & Relaxation Timers -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Ambient Audio Mixer -->
+            <div class="card">
+              <div class="card-title">🍃 Ambient Forest Sound Mixer</div>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+                Enable simulated sound loops to accompany your focus or relaxation sessions.
+              </p>
+
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="sound-slider-card">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <button id="playBtnRain" onclick="toggleSound('rain')" class="audio-btn">🌧️</button>
+                    <div>
+                      <h5 style="margin-bottom:2px;">Cozy Spring Rain</h5>
+                      <span style="font-size:0.75rem; color:var(--text-muted);" id="statusRain">Paused</span>
+                    </div>
+                  </div>
+                  <input type="range" id="volRain" min="0" max="100" value="70" style="width:120px;" />
+                </div>
+
+                <div class="sound-slider-card">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <button id="playBtnWind" onclick="toggleSound('wind')" class="audio-btn">🍃</button>
+                    <div>
+                      <h5 style="margin-bottom:2px;">Valley Wind</h5>
+                      <span style="font-size:0.75rem; color:var(--text-muted);" id="statusWind">Paused</span>
+                    </div>
+                  </div>
+                  <input type="range" id="volWind" min="0" max="100" value="50" style="width:120px;" />
+                </div>
+
+                <div class="sound-slider-card">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <button id="playBtnFire" onclick="toggleSound('fire')" class="audio-btn">🔥</button>
+                    <div>
+                      <h5 style="margin-bottom:2px;">Cozy Campfire</h5>
+                      <span style="font-size:0.75rem; color:var(--text-muted);" id="statusFire">Paused</span>
+                    </div>
+                  </div>
+                  <input type="range" id="volFire" min="0" max="100" value="80" style="width:120px;" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Relaxation Timer -->
+            <div class="card">
+              <div class="card-title">🧘 Quiet Breath Timer</div>
+              <div class="pomodoro-wrapper">
+                <div class="timer-circle" id="relaxCircle" style="border-color: var(--color-me-time); box-shadow: 0 0 20px rgba(162, 236, 230, 0.15);">
+                  <span class="timer-minutes" id="relaxLabel">05:00</span>
+                  <span class="timer-label">Breath Space</span>
+                </div>
+                <div style="display:flex; gap:10px;">
+                  <button onclick="setRelaxPreset(5)" class="btn btn-secondary btn-sm">5 mins</button>
+                  <button onclick="setRelaxPreset(10)" class="btn btn-secondary btn-sm">10 mins</button>
+                  <button onclick="setRelaxPreset(15)" class="btn btn-secondary btn-sm">15 mins</button>
+                </div>
+                <div class="timer-controls">
+                  <button id="btnRelaxStart" onclick="toggleRelaxTimer()" class="btn btn-gold" style="background: linear-gradient(135deg, var(--color-me-time), #7ec2bc); color: #121e16;">Start Breathing</button>
+                  <button onclick="resetRelaxTimer()" class="btn btn-secondary">Reset</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Self-care Logs & Suggestions -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Cozy Activity Suggestions -->
+            <div class="card">
+              <div class="card-title">🍵 Cozy Activity Suggestions</div>
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+                <div class="glass-panel" style="margin-bottom: 0;">
+                  <strong>🍵 Brew Warm Matcha</strong>: Boil water, whisk matcha powder gently in zigzag patterns, sweeten with honey. Take slow sips.
+                </div>
+                <div class="glass-panel" style="margin-bottom: 0;">
+                  <strong>⛅ Cloud Gazing</strong>: Lie down near a window for 10 minutes. Watch shape drifts. Let your thoughts pass without judgment.
+                </div>
+                <div class="glass-panel" style="margin-bottom: 0;">
+                  <strong>🚶 Valley Stroll</strong>: Step outside. Walk without a phone. Feel the soil, observe the leaves, and listen to the birds.
+                </div>
+              </div>
+            </div>
+
+            <!-- Self-care Relaxation Logger -->
+            <div class="card">
+              <div class="card-title">📖 Log Self-Care Activities</div>
+              <div class="glass-panel" style="display:flex; gap:10px;">
+                <input type="text" id="selfCareInput" placeholder="What self-care did you practice? (e.g. Brewed Tea)" style="flex-grow:1;" />
+                <button onclick="logSelfCare()" class="btn btn-gold" style="background: var(--color-me-time); color: #121e16;">Log</button>
+              </div>
+              <div style="max-height: 200px; overflow-y: auto; margin-top: 15px;">
+                <ul id="selfCareLogsList" style="font-size: 0.88rem; padding-left: 20px; line-height: 1.6;"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const mgr = window.stateManager;
+      
+      // Simulated audio playing database
+      const audioStates = {
+        rain: false,
+        wind: false,
+        fire: false
+      };
+
+      // Timer variables
+      let relaxInterval = null;
+      let relaxDuration = 5 * 60;
+      let relaxRunning = false;
+      let presetMinutes = 5;
+
+      function toggleSound(sound) {
+        audioStates[sound] = !audioStates[sound];
+        
+        const btn = document.getElementById(`playBtn${sound.charAt(0).toUpperCase() + sound.slice(1)}`);
+        const status = document.getElementById(`status${sound.charAt(0).toUpperCase() + sound.slice(1)}`);
+
+        if (audioStates[sound]) {
+          btn.classList.add('playing');
+          status.textContent = 'Playing (Simulated)';
+          mgr.addXP(5);
+        } else {
+          btn.classList.remove('playing');
+          status.textContent = 'Paused';
+        }
+      }
+
+      function setRelaxPreset(mins) {
+        clearInterval(relaxInterval);
+        relaxRunning = false;
+        presetMinutes = mins;
+        relaxDuration = mins * 60;
+        document.getElementById('btnRelaxStart').textContent = 'Start Breathing';
+        document.getElementById('relaxCircle').classList.remove('active');
+        updateRelaxDisplay();
+      }
+
+      function updateRelaxDisplay() {
+        const m = Math.floor(relaxDuration / 60).toString().padStart(2, '0');
+        const s = (relaxDuration % 60).toString().padStart(2, '0');
+        document.getElementById('relaxLabel').textContent = `${m}:${s}`;
+      }
+
+      function toggleRelaxTimer() {
+        if (relaxRunning) {
+          clearInterval(relaxInterval);
+          relaxRunning = false;
+          document.getElementById('btnRelaxStart').textContent = 'Resume Breathing';
+          document.getElementById('relaxCircle').classList.remove('active');
+        } else {
+          relaxRunning = true;
+          document.getElementById('btnRelaxStart').textContent = 'Pause Breath';
+          document.getElementById('relaxCircle').classList.add('active');
+          
+          relaxInterval = setInterval(() => {
+            relaxDuration--;
+            updateRelaxDisplay();
+
+            if (relaxDuration <= 0) {
+              clearInterval(relaxInterval);
+              relaxRunning = false;
+              document.getElementById('relaxCircle').classList.remove('active');
+              alert("🧘 Chime rings... open your eyes. You completed your peaceful breathing session!");
+              
+              mgr.data.meTimeLogs.unshift({
+                activity: `Quiet Breathing Timer (${presetMinutes}m)`,
+                date: new Date().toLocaleDateString()
+              });
+              
+              mgr.addXP(35);
+              mgr.save();
+              resetRelaxTimer();
+              syncUI();
+            }
+          }, 1000);
+        }
+      }
+
+      function resetRelaxTimer() {
+        clearInterval(relaxInterval);
+        relaxRunning = false;
+        relaxDuration = presetMinutes * 60;
+        document.getElementById('btnRelaxStart').textContent = 'Start Breathing';
+        document.getElementById('relaxCircle').classList.remove('active');
+        updateRelaxDisplay();
+      }
+
+      function logSelfCare() {
+        const val = document.getElementById('selfCareInput').value.trim();
+        if (!val) return;
+
+        mgr.data.meTimeLogs.unshift({
+          activity: val,
+          date: new Date().toLocaleDateString()
+        });
+        
+        mgr.addXP(15);
+        mgr.save();
+        document.getElementById('selfCareInput').value = '';
+        syncUI();
+      }
+
+      function syncUI() {
+        const list = document.getElementById('selfCareLogsList');
+        list.innerHTML = '';
+        
+        const defaultLogs = [
+          { activity: 'Brewed hot chamomile matcha tea', date: '6/10/2026' }
+        ];
+
+        const logs = mgr.data.meTimeLogs.length > 0 ? mgr.data.meTimeLogs : defaultLogs;
+        logs.forEach(l => {
+          list.innerHTML += `
+            <li>
+              <strong>${l.activity}</strong> 
+              <span style="font-size:0.75rem; color:var(--text-muted);">on ${l.date}</span>
+            </li>
+          `;
+        });
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        syncUI();
+        window.addEventListener('wellbell_state_updated', syncUI);
+      });
+    </script>
+  </body>
+</html>

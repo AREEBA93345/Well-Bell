@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Well-Bell | Sleep Cycles</title>
+    <link rel="stylesheet" href="Style.css" />
+    <script src="state.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <aside></aside>
+
+      <main>
+        <header>
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h1>🌙 Sleep Cycles & Recovery</h1>
+              <p>Recharge your spirit under the magical starlight. Sleep consistency builds resilience.</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Log Sleep & Bedtime routine -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Sleep Logger -->
+            <div class="card">
+              <div class="card-title">🛌 Log Last Night's Sleep</div>
+              
+              <form id="sleepLogForm" onsubmit="logSleep(event)">
+                <div class="form-group-row">
+                  <div>
+                    <label for="sleepBedtime">Bedtime</label>
+                    <input type="time" id="sleepBedtime" required value="22:30" />
+                  </div>
+                  <div>
+                    <label for="sleepWaketime">Wake Up Time</label>
+                    <input type="time" id="sleepWaketime" required value="06:30" />
+                  </div>
+                </div>
+
+                <div class="form-group-row">
+                  <div>
+                    <label for="sleepQuality">Sleep Quality (1 = Heavy Restless, 5 = Deep Peaceful)</label>
+                    <select id="sleepQuality" required>
+                      <option value="1">1 - Restless Storm 😰</option>
+                      <option value="2">2 - Tossing & Turning 😐</option>
+                      <option value="3" selected>3 - Fair/Normal Rest 🙂</option>
+                      <option value="4">4 - Peaceful Sleep 😌</option>
+                      <option value="5">5 - Deep Golden Rest 😴</option>
+                    </select>
+                  </div>
+                  <div style="display: flex; align-items: flex-end;">
+                    <button type="submit" class="btn btn-gold" style="width: 100%;">Save Sleep Log</button>
+                  </div>
+                </div>
+              </form>
+
+              <div class="glass-panel" style="margin-top: 15px; margin-bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center;">
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Last Duration</div>
+                  <div style="font-size: 1.25rem; font-weight: 800; color: var(--accent-gold);" id="lastDurationVal">8h</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Last Quality</div>
+                  <div style="font-size: 1.25rem; font-weight: 800;" id="lastQualityVal">4/5</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Current Streak</div>
+                  <div style="font-size: 1.25rem; font-weight: 800; color: var(--color-diet);" id="sleepStreakVal">🔥 0 Days</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bedtime Routine Checklist -->
+            <div class="card">
+              <div class="card-title">📖 Cozy Bedtime Checklist</div>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+                Checking off these routines before sleeping improves your sleep consistency index!
+              </p>
+              
+              <div class="checklist">
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkBedWater" class="routine-chk" data-key="water">
+                  <span>💧 Drink a warm cup of water / tea</span>
+                </label>
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkBedRead" class="routine-chk" data-key="read">
+                  <span>📖 Read a physical book (10-15 mins)</span>
+                </label>
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkBedStretch" class="routine-chk" data-key="stretch">
+                  <span>🧘 Soft active stretching / breathing flows</span>
+                </label>
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkBedNoScreen" class="routine-chk" data-key="noScreen">
+                  <span>📴 Turn off screens / reduce blue light 1 hour prior</span>
+                </label>
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkBedMeditation" class="routine-chk" data-key="meditation">
+                  <span>🧘 Gentle forest meditation / gratitude reflection</span>
+                </label>
+                <label class="checklist-item">
+                  <input type="checkbox" id="chkBedPlanTasks" class="routine-chk" data-key="planTasks">
+                  <span>📋 Draft tomorrow's tasks to clear the mind</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Sleep Debt, Advice & History Charts -->
+          <div style="display: flex; flex-direction: column; gap: 25px;">
+            <!-- Advanced Sleep Calculations -->
+            <div class="card">
+              <div class="card-title" style="color: var(--accent-gold);">🍂 Advanced Sleep Analytics</div>
+              
+              <div class="glass-panel" style="margin-bottom: 12px;">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Current Sleep Debt (Weekly)</div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-physical);" id="sleepDebtVal">0.0 hours</div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">The gap between target (8h) and actual rest over recent logs.</p>
+              </div>
+
+              <div class="glass-panel" style="margin-bottom: 12px;">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Ideal Bedtime Recommendation</div>
+                <div style="font-size: 1.25rem; font-weight: 800;" id="sleepBedtimeRecommendation">22:30 PM</div>
+              </div>
+
+              <div class="glass-panel" style="margin-bottom: 0;">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Sleep Consistency Rating</div>
+                <div style="font-size: 1.25rem; font-weight: 800; color: var(--color-diet);" id="sleepConsistencyScore">--%</div>
+              </div>
+            </div>
+
+            <!-- Sleep History Chart -->
+            <div class="card">
+              <div class="card-title">📊 Weekly Rest Cycles</div>
+              <div style="position: relative; height: 180px;">
+                <canvas id="sleepHistoryChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const mgr = window.stateManager;
+      let sleepHistoryChart = null;
+
+      function logSleep(e) {
+        e.preventDefault();
+        const bedtime = document.getElementById('sleepBedtime').value;
+        const wakeTime = document.getElementById('sleepWaketime').value;
+        const quality = parseInt(document.getElementById('sleepQuality').value);
+
+        // Calculate duration
+        const bed = new Date(`2000-01-01T${bedtime}:00`);
+        let wake = new Date(`2000-01-01T${wakeTime}:00`);
+        
+        if (wake < bed) {
+          // Sleep crossed midnight
+          wake = new Date(`2000-01-02T${wakeTime}:00`);
+        }
+        
+        const diffMs = wake - bed;
+        const duration = parseFloat((diffMs / (1000 * 60 * 60)).toFixed(1));
+
+        const date = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+
+        // Save entry
+        mgr.data.sleepLog.bedtime = bedtime;
+        mgr.data.sleepLog.wakeTime = wakeTime;
+        mgr.data.sleepLog.duration = duration;
+        mgr.data.sleepLog.quality = quality;
+        
+        if (!mgr.data.sleepLog.history) mgr.data.sleepLog.history = [];
+        mgr.data.sleepLog.history.unshift({ date, duration, quality });
+
+        // Streaks increments
+        mgr.data.streaks.sleep += 1;
+        mgr.addXP(40);
+        if (duration >= 8.0) {
+          mgr.unlockBadge('early_bird');
+        }
+
+        mgr.save();
+        syncUI();
+      }
+
+      // Checkbox listener
+      document.querySelectorAll('.routine-chk').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+          const key = e.target.dataset.key;
+          mgr.data.bedtimeChecklist[key] = e.target.checked;
+          if (e.target.checked) {
+            mgr.addXP(10);
+          }
+          mgr.save();
+          syncUI();
+        });
+      });
+
+      function renderSleepChart() {
+        const ctx = document.getElementById('sleepHistoryChart').getContext('2d');
+        const isLight = document.body.classList.contains('light-mode');
+        const textCol = isLight ? '#3d2a1d' : '#afc1b4';
+
+        const history = mgr.data.sleepLog.history.slice(0, 5).reverse();
+        const labels = history.map(h => h.date).length > 0 ? history.map(h => h.date) : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+        const dataVals = history.map(h => h.duration).length > 0 ? history.map(h => h.duration) : [8.0, 7.5, 6.2, 8.5, mgr.data.sleepLog.duration];
+
+        if (sleepHistoryChart) {
+          sleepHistoryChart.destroy();
+        }
+
+        sleepHistoryChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Hours Slept',
+              data: dataVals,
+              backgroundColor: 'rgba(251, 194, 155, 0.45)',
+              borderColor: '#fbc29b',
+              borderWidth: 1.5,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: textCol } },
+              y: { max: 12, ticks: { stepSize: 2, color: textCol }, grid: { color: 'rgba(255,255,255,0.03)' } }
+            }
+          }
+        });
+      }
+
+      function calculateConsistency() {
+        const history = mgr.data.sleepLog.history;
+        if (history.length < 2) return 85; // Default score
+        
+        let deviations = 0;
+        for(let i = 0; i < history.length; i++) {
+          const diff = Math.abs(history[i].duration - 8.0);
+          deviations += diff;
+        }
+        const avgDev = deviations / history.length;
+        return Math.max(20, Math.round(100 - (avgDev * 15)));
+      }
+
+      function syncUI() {
+        const log = mgr.data.sleepLog;
+        
+        document.getElementById('sleepBedtime').value = log.bedtime;
+        document.getElementById('sleepWaketime').value = log.wakeTime;
+        document.getElementById('sleepQuality').value = log.quality;
+
+        document.getElementById('lastDurationVal').textContent = `${log.duration} hrs`;
+        document.getElementById('lastQualityVal').textContent = `${log.quality}/5`;
+        document.getElementById('sleepStreakVal').textContent = `🔥 Rest Streak: ${mgr.data.streaks.sleep} days`;
+
+        // Checkboxes Sync
+        Object.keys(mgr.data.bedtimeChecklist).forEach(key => {
+          const chk = document.getElementById(`chkBed${key.charAt(0).toUpperCase() + key.slice(1)}`);
+          if (chk) chk.checked = mgr.data.bedtimeChecklist[key];
+        });
+
+        // Advanced metrics calculate
+        const consistency = calculateConsistency();
+        document.getElementById('sleepConsistencyScore').textContent = `${consistency}%`;
+
+        // Sleep debt calculate
+        let totalLogged = 0;
+        let days = log.history.length || 1;
+        
+        if (log.history.length > 0) {
+          log.history.slice(0, 7).forEach(h => totalLogged += h.duration);
+        } else {
+          totalLogged = log.duration;
+        }
+        
+        const idealTotal = days * 8.0;
+        const debt = Math.max(0, parseFloat((idealTotal - totalLogged).toFixed(1)));
+        document.getElementById('sleepDebtVal').textContent = `${debt} hours`;
+        if (debt > 5.0) {
+          document.getElementById('sleepDebtVal').style.color = 'var(--color-physical)';
+        } else {
+          document.getElementById('sleepDebtVal').style.color = 'var(--color-diet)';
+        }
+
+        // Recommendations
+        document.getElementById('sleepBedtimeRecommendation').textContent = `22:15 PM (based on your average wake-up time)`;
+
+        renderSleepChart();
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        syncUI();
+        window.addEventListener('wellbell_state_updated', syncUI);
+        window.addEventListener('wellbell_theme_changed', renderSleepChart);
+      });
+    </script>
+  </body>
+</html>
